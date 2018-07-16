@@ -35,14 +35,14 @@ Lidar odometry performs two-step Levenberg Marquardt optimization to get 6D tran
 
 VLP-16 has a angular resolution of 0.2&deg; along x direction and 2&deg; along y direction. It has 16 beams. The angle of the bottom beam is 15&deg;. Thus, the parameters in "utility.h" are listed as.
 
-'''
+```
 extern const int N_SCAN = 16;
 extern const int Horizon_SCAN = 1800;
 extern const float ang_res_x = 0.2;
 extern const float ang_res_y = 2.0;
 extern const float ang_bottom = 15.0;
 extern const int groundScanInd = 7;
-'''
+```
 
 
 ## Run the package
