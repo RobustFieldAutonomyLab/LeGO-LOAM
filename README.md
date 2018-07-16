@@ -20,6 +20,14 @@ catkin_make -j1
 ```
 When you compile the code for the first time, you need to add "-j1" behind "catkin_make" for generating some message types. "-j1" is not needed for future compiling.
 
+## The system
+
+LeGO-LOAM is speficifally optimized for a horizontally placed VLP-16 on a ground vehicle. It assumes there is always a ground plane in the scan. The UGV we are using is Clearpath Jackal.
+
+![Jackal](/LeGO-LOAM/launch/jackal-label.jpg)
+
+
+
 ## Run the package
 
 1. Run the launch file:
