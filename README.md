@@ -33,7 +33,7 @@ Lidar odometry performs two-step Levenberg Marquardt optimization to get 6D tran
 
 ## New sensor
 
-VLP-16 has a angular resolution of 0.2&deg; along x direction and 2&deg; along y direction. It has 16 beams. The angle of the bottom beam is 15&deg;. Thus, the parameters in "utility.h" are listed as.
+VLP-16 has a angular resolution of 0.2&deg; along x direction and 2&deg; along y direction. It has 16 beams. The angle of the bottom beam is 15&deg;. Thus, the parameters in "utility.h" are listed as. When you implement new sensor, make sure the ground_cloud has enough points for scan matching.
 
 ```
 extern const int N_SCAN = 16;
@@ -43,8 +43,6 @@ extern const float ang_res_y = 2.0;
 extern const float ang_bottom = 15.0;
 extern const int groundScanInd = 7;
 ```
-
-
 ## Run the package
 
 1. Run the launch file:
@@ -57,7 +55,7 @@ Notes: The parameter "/use_sim_time" is set to "true" for simulation, "false" to
 ```
 rosbag play *.bag --clock --topic /velodyne_points /imu/data
 ```
-Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608)
+Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608) If your IMU frame doesn't align with Velodyne frame, use of IMU data will cause significant drift.
 
 ## Cite *LeGO-LOAM*
 
