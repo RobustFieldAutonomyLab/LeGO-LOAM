@@ -63,7 +63,7 @@ Thank you for citing our *LeGO-LOAM* paper if you use any of this code:
 ```
 @inproceedings{legoloam2018,
   title={LeGO-LOAM: Lightweight and Ground-Optimized Lidar Odometry and Mapping on Variable Terrain},
-  author={Dub{\'e}, Tixiao Shan and Brendan Englot},
+  author={Tixiao Shan and Brendan Englot},
   booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
   pages={Accepted, To Appear in October},
   year={2018},
