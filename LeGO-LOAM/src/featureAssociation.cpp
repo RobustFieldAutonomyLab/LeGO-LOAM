@@ -635,7 +635,7 @@ public:
 
             float depth1 = segInfo.segmentedCloudRange[i];
             float depth2 = segInfo.segmentedCloudRange[i+1];
-            int columnDiff = std::abs(segInfo.segmentedCloudColInd[i+1] - segInfo.segmentedCloudColInd[i]);
+            int columnDiff = std::abs(int(segInfo.segmentedCloudColInd[i+1] - segInfo.segmentedCloudColInd[i]));
 
             if (columnDiff < 10){
 
@@ -706,13 +706,13 @@ public:
 
                         cloudNeighborPicked[ind] = 1;
                         for (int l = 1; l <= 5; l++) {
-                            int columnDiff = std::abs(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l - 1]);
+                            int columnDiff = std::abs(int(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l - 1]));
                             if (columnDiff > 10)
                                 break;
                             cloudNeighborPicked[ind + l] = 1;
                         }
                         for (int l = -1; l >= -5; l--) {
-                            int columnDiff = std::abs(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l + 1]);
+                            int columnDiff = std::abs(int(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l + 1]));
                             if (columnDiff > 10)
                                 break;
                             cloudNeighborPicked[ind + l] = 1;
@@ -738,7 +738,7 @@ public:
                         cloudNeighborPicked[ind] = 1;
                         for (int l = 1; l <= 5; l++) {
 
-                            int columnDiff = std::abs(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l - 1]);
+                            int columnDiff = std::abs(int(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l - 1]));
                             if (columnDiff > 10)
                                 break;
 
@@ -746,7 +746,7 @@ public:
                         }
                         for (int l = -1; l >= -5; l--) {
 
-                            int columnDiff = std::abs(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l + 1]);
+                            int columnDiff = std::abs(int(segInfo.segmentedCloudColInd[ind + l] - segInfo.segmentedCloudColInd[ind + l + 1]));
                             if (columnDiff > 10)
                                 break;
 
