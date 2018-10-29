@@ -88,7 +88,7 @@ extern const float historyKeyframeSearchRadius = 5.0;
 extern const int   historyKeyframeSearchNum = 25;
 extern const float historyKeyframeFitnessScore = 0.3;
 
-extern const float globalMapVisualizationSearchRadius = 50.0;
+extern const float globalMapVisualizationSearchRadius = 500.0;
 
 
 struct smoothness_t{ 
