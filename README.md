@@ -43,6 +43,22 @@ extern const float ang_res_y = 2.0;
 extern const float ang_bottom = 15.0;
 extern const int groundScanInd = 7;
 ```
+
+Another example for Velodyne HDL-32e range image projection:
+
+```
+extern const int N_SCAN = 32;
+extern const int Horizon_SCAN = 1800;
+extern const float ang_res_x = 360.0/Horizon_SCAN;
+extern const float ang_res_y = 41.333/float(N_Scan-1);
+extern const float ang_bottom = 30.666666;
+extern const int groundScanInd = 20;
+```
+
+One important thing to keep in mind is that our current implementation for range image projection is only suitable for sensors that have evenly distributed channels. If you want to use our algorithm with Velodyne VLP-32c or HDL-64e, you need to write your own implementation for such projection. If the point cloud is not projected properly, you will lose many points and performance.
+
+If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result.
+
 ## Run the package
 
 1. Run the launch file:
