@@ -11,9 +11,18 @@
     <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0 0 0 -1.570795 -1.570795 0        /camera /base_link   10" />
 
     <!--- LeGO-LOAM -->    
-    <node pkg="lego_loam" type="imageProjection"    name="imageProjection"    output="screen"/>
-    <node pkg="lego_loam" type="featureAssociation" name="featureAssociation" output="screen"/>
-    <node pkg="lego_loam" type="mapOptmization"     name="mapOptmization"     output="screen"/>
-    <node pkg="lego_loam" type="transformFusion"    name="transformFusion"    output="screen"/>
-
+    <node pkg="lego_loam" type="imageProjection"    name="imageProjection"    output="screen">
+        <rosparam command="load" file="$(find lego_loam)/params/legoloam.yaml" />
+    </node>
+    
+    <node pkg="lego_loam" type="featureAssociation" name="featureAssociation" output="screen">
+        <rosparam command="load" file="$(find lego_loam)/params/legoloam.yaml" />
+    </node>
+    <node pkg="lego_loam" type="mapOptmization"     name="mapOptmization"     output="screen">
+        <rosparam command="load" file="$(find lego_loam)/params/legoloam.yaml" />
+    </node>
+    
+    <node pkg="lego_loam" type="transformFusion"    name="transformFusion"    output="screen">
+        <rosparam command="load" file="$(find lego_loam)/params/legoloam.yaml" />
+    </node>
 </launch>

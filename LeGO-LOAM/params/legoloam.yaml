@@ -1,0 +1,47 @@
+#Velodyne-16
+N_SCAN : 16
+Horizon_SCAN: 1800
+ang_res_x: 0.2
+ang_res_y: 2.0
+ang_bottom : 15.1
+groundScanInd : 7
+
+# Ouster OS1-64
+#N_SCAN : 64
+#Horizon_SCAN: 1024
+#ang_res_x: 0.3515625
+#ang_res_y: 0.5269
+#ang_bottom : 16.7
+#groundScanInd : 15
+
+loopClosureEnableFlag: false
+mappingProcessInterval: 0.3
+
+scanPeriod: 0.1
+systemDelay: 0
+imuQueLength: 200
+imuTopic: "/imu/data"
+
+sensorMountAngle: 0.0
+segmentTheta: 1.0472
+segmentValidPointNum: 5
+segmentValidLineNum: 3
+segmentAlphaX: 0.003491
+segmentAlphaY: 0.034906
+
+edgeFeatureNum: 2
+surfFeatureNum: 4
+sectionsTotal: 6
+edgeThreshold: 0.1
+surfThreshold: 0.1
+nearestFeatureSearchSqDist: 25
+
+surroundingKeyframeSearchRadius: 50.0
+surroundingKeyframeSearchNum: 50.0
+
+historyKeyframeSearchRadius: 5.0
+historyKeyframeSearchNum: 25
+historyKeyframeFitnessScore: 0.3
+
+globalMapVisualizationSearchRadius: 500
+

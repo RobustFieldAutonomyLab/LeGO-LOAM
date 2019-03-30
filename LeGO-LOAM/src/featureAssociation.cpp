@@ -39,7 +39,7 @@ class FeatureAssociation{
 private:
 
 	ros::NodeHandle nh;
-
+    
     ros::Subscriber subLaserCloud;
     ros::Subscriber subLaserCloudInfo;
     ros::Subscriber subOutlierCloud;
@@ -67,7 +67,9 @@ private:
     double timeNewSegmentedCloud;
     double timeNewSegmentedCloudInfo;
     double timeNewOutlierCloud;
+    double scanPeriod ;
 
+    
     bool newSegmentedCloud;
     bool newSegmentedCloudInfo;
     bool newOutlierCloud;
@@ -186,7 +188,7 @@ public:
     FeatureAssociation():
         nh("~")
         {
-
+        nh.getParam("scanPeriod", scanPeriod);
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/segmented_cloud", 1, &FeatureAssociation::laserCloudHandler, this);
         subLaserCloudInfo = nh.subscribe<cloud_msgs::cloud_info>("/segmented_cloud_info", 1, &FeatureAssociation::laserCloudInfoHandler, this);
         subOutlierCloud = nh.subscribe<sensor_msgs::PointCloud2>("/outlier_cloud", 1, &FeatureAssociation::outlierCloudHandler, this);
@@ -399,6 +401,7 @@ public:
 
         int imuPointerBack = (imuPointerLast + imuQueLength - 1) % imuQueLength;
         double timeDiff = imuTime[imuPointerLast] - imuTime[imuPointerBack];
+        
         if (timeDiff < scanPeriod) {
 
             imuShiftX[imuPointerLast] = imuShiftX[imuPointerBack] + imuVeloX[imuPointerBack] * timeDiff + accX * timeDiff * timeDiff / 2;

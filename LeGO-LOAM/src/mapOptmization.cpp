@@ -175,7 +175,9 @@ private:
     float transformTobeMapped[6];
     float transformBefMapped[6];
     float transformAftMapped[6];
-
+    
+    double scanPeriod ;
+  
 
     int imuPointerFront;
     int imuPointerLast;
@@ -225,6 +227,7 @@ public:
     mapOptimization():
         nh("~")
     {
+        nh.getParam("scanPeriod", scanPeriod);
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
 		parameters.relinearizeSkip = 1;
