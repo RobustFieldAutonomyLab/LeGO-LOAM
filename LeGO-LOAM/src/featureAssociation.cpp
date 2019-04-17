@@ -68,7 +68,7 @@ private:
     double timeNewSegmentedCloudInfo;
     double timeNewOutlierCloud;
     double scanPeriod ;
-
+    
     
     bool newSegmentedCloud;
     bool newSegmentedCloudInfo;
@@ -105,32 +105,33 @@ private:
     float imuAngularRotationXCur, imuAngularRotationYCur, imuAngularRotationZCur;
     float imuAngularRotationXLast, imuAngularRotationYLast, imuAngularRotationZLast;
     float imuAngularFromStartX, imuAngularFromStartY, imuAngularFromStartZ;
+    
+    // HERE
+    double *imuTime;
+    float *imuRoll;
+    float *imuPitch;
+    float *imuYaw;
 
-    double imuTime[imuQueLength];
-    float imuRoll[imuQueLength];
-    float imuPitch[imuQueLength];
-    float imuYaw[imuQueLength];
+    float *imuAccX;
+    float *imuAccY;
+    float *imuAccZ;
 
-    float imuAccX[imuQueLength];
-    float imuAccY[imuQueLength];
-    float imuAccZ[imuQueLength];
+    float *imuVeloX;
+    float *imuVeloY;
+    float *imuVeloZ;
 
-    float imuVeloX[imuQueLength];
-    float imuVeloY[imuQueLength];
-    float imuVeloZ[imuQueLength];
+    float *imuShiftX;
+    float *imuShiftY;
+    float *imuShiftZ;
 
-    float imuShiftX[imuQueLength];
-    float imuShiftY[imuQueLength];
-    float imuShiftZ[imuQueLength];
+    float *imuAngularVeloX;
+    float *imuAngularVeloY;
+    float *imuAngularVeloZ;
 
-    float imuAngularVeloX[imuQueLength];
-    float imuAngularVeloY[imuQueLength];
-    float imuAngularVeloZ[imuQueLength];
-
-    float imuAngularRotationX[imuQueLength];
-    float imuAngularRotationY[imuQueLength];
-    float imuAngularRotationZ[imuQueLength];
-
+    float *imuAngularRotationX;
+    float *imuAngularRotationY;
+    float *imuAngularRotationZ;
+    //HERE
 
 
     ros::Publisher pubLaserCloudCornerLast;
@@ -182,6 +183,7 @@ private:
     cv::Mat matP;
 
     int frameCount;
+    int imuQueLength;
 
 public:
 
@@ -189,6 +191,29 @@ public:
         nh("~")
         {
         nh.getParam("scanPeriod", scanPeriod);
+        string imuTopic;
+        nh.getParam("imuTopic",imuTopic);
+        nh.getParam("imuQueLength",imuQueLength);
+        imuTime= new double[imuQueLength];
+        imuRoll= new float[imuQueLength];
+        imuPitch= new float[imuQueLength];
+        imuYaw= new float[imuQueLength];
+        imuAccX= new float[imuQueLength];
+        imuAccY= new float[imuQueLength];
+        imuAccZ= new float[imuQueLength];
+        imuVeloX= new float[imuQueLength];
+        imuVeloY= new float[imuQueLength];
+        imuVeloZ= new float[imuQueLength];
+        imuShiftX= new float[imuQueLength];
+        imuShiftY= new float[imuQueLength];
+        imuShiftZ= new float[imuQueLength];
+        imuAngularVeloX= new float[imuQueLength];
+        imuAngularVeloY= new float[imuQueLength];
+        imuAngularVeloZ= new float[imuQueLength];
+        imuAngularRotationX= new float[imuQueLength];
+        imuAngularRotationY= new float[imuQueLength];
+        imuAngularRotationZ= new float[imuQueLength];
+
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/segmented_cloud", 1, &FeatureAssociation::laserCloudHandler, this);
         subLaserCloudInfo = nh.subscribe<cloud_msgs::cloud_info>("/segmented_cloud_info", 1, &FeatureAssociation::laserCloudInfoHandler, this);
         subOutlierCloud = nh.subscribe<sensor_msgs::PointCloud2>("/outlier_cloud", 1, &FeatureAssociation::outlierCloudHandler, this);
@@ -446,6 +471,28 @@ public:
         imuAngularVeloZ[imuPointerLast] = imuIn->angular_velocity.z;
 
         AccumulateIMUShiftAndRotation();
+        delete [] imuTime;
+        delete [] imuRoll;
+        delete [] imuPitch;
+        delete [] imuYaw;
+        delete [] imuAccX;
+        delete [] imuAccY;
+        delete [] imuAccZ;
+        delete [] imuVeloX;
+        delete [] imuVeloY;
+        delete [] imuVeloZ;
+
+        delete [] imuShiftX;
+        delete [] imuShiftY;
+        delete [] imuShiftZ;
+
+        delete [] imuAngularVeloX;
+        delete [] imuAngularVeloY;
+        delete [] imuAngularVeloZ;
+
+        delete [] imuAngularRotationX;
+        delete [] imuAngularRotationY;
+        delete [] imuAngularRotationZ;
     }
 
     void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){

@@ -177,14 +177,13 @@ private:
     float transformAftMapped[6];
     
     double scanPeriod ;
-  
-
+    
+    double *imuTime;
+    float *imuRoll;
+    float *imuPitch;
     int imuPointerFront;
     int imuPointerLast;
-
-    double imuTime[imuQueLength];
-    float imuRoll[imuQueLength];
-    float imuPitch[imuQueLength];
+ 
 
     std::mutex mtx;
 
@@ -219,15 +218,25 @@ private:
 
     float cRoll, sRoll, cPitch, sPitch, cYaw, sYaw, tX, tY, tZ;
     float ctRoll, stRoll, ctPitch, stPitch, ctYaw, stYaw, tInX, tInY, tInZ;
+    bool loopClosureEnableFlag;
+    double mappingProcessInterval;
+    int imuQueLength;
 
 public:
-
-    
 
     mapOptimization():
         nh("~")
     {
+        nh.getParam("loopClosureEnableFlag",loopClosureEnableFlag);   
         nh.getParam("scanPeriod", scanPeriod);
+        nh.getParam("mappingProcessInterval",mappingProcessInterval);
+        string imuTopic;
+        nh.getParam("imuTopic",imuTopic);
+        nh.getParam("imuQueLength",imuQueLength);
+        imuTime= new double[imuQueLength];
+        imuRoll= new float[imuQueLength];
+        imuPitch= new float[imuQueLength]; 
+
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
 		parameters.relinearizeSkip = 1;
@@ -494,6 +503,10 @@ public:
 		    transformBefMapped[i] = transformSum[i];
 		    transformAftMapped[i] = transformTobeMapped[i];
 		}
+
+        delete []imuTime;
+        delete []imuPitch;
+        delete []imuRoll;
     }
 
     void updatePointAssociateToMapSinCos(){
