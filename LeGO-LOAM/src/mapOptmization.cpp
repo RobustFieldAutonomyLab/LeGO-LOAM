@@ -178,9 +178,9 @@ private:
     
     double scanPeriod ;
     
-    double *imuTime;
-    float *imuRoll;
-    float *imuPitch;
+    std::unique_ptr<double[]> imuTime;
+    std::unique_ptr<float[]> imuRoll;
+    std::unique_ptr<float []>imuPitch;
     int imuPointerFront;
     int imuPointerLast;
  
@@ -257,10 +257,12 @@ public:
         nh.getParam("ang_res_y",ang_res_y);
         nh.getParam("ang_bottom",ang_bottom);
         nh.getParam("groundScanInd",groundScanInd);
-         
-        imuTime= new double[imuQueLength];
-        imuRoll= new float[imuQueLength];
-        imuPitch= new float[imuQueLength]; 
+        std::unique_ptr<double[]> p1(new double[imuQueLength]());
+        imuTime= std::move(p1);
+        std::unique_ptr<float[]> p2(new float[imuQueLength]());
+        imuRoll= std::move(p2);
+        std::unique_ptr<float[]> p3(new float[imuQueLength]());
+        imuPitch= std::move(p3); 
 
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
@@ -529,9 +531,6 @@ public:
 		    transformAftMapped[i] = transformTobeMapped[i];
 		}
 
-        delete []imuTime;
-        delete []imuPitch;
-        delete []imuRoll;
     }
 
     void updatePointAssociateToMapSinCos(){
