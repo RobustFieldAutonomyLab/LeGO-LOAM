@@ -81,10 +81,9 @@ private:
     bool systemInited;
 
     std::vector<smoothness_t> cloudSmoothness;
-    float cloudCurvature[N_SCAN*Horizon_SCAN];
-    int cloudNeighborPicked[N_SCAN*Horizon_SCAN];
-    int cloudLabel[N_SCAN*Horizon_SCAN];
-
+    float *cloudCurvature;
+    int *cloudNeighborPicked;
+    int *cloudLabel;
     int imuPointerFront;
     int imuPointerLast;
     int imuPointerLastIteration;
@@ -106,7 +105,6 @@ private:
     float imuAngularRotationXLast, imuAngularRotationYLast, imuAngularRotationZLast;
     float imuAngularFromStartX, imuAngularFromStartY, imuAngularFromStartZ;
     
-    // HERE
     double *imuTime;
     float *imuRoll;
     float *imuPitch;
@@ -131,8 +129,6 @@ private:
     float *imuAngularRotationX;
     float *imuAngularRotationY;
     float *imuAngularRotationZ;
-    //HERE
-
 
     ros::Publisher pubLaserCloudCornerLast;
     ros::Publisher pubLaserCloudSurfLast;
@@ -145,14 +141,14 @@ private:
     int laserCloudCornerLastNum;
     int laserCloudSurfLastNum;
 
-    int pointSelCornerInd[N_SCAN*Horizon_SCAN];
-    float pointSearchCornerInd1[N_SCAN*Horizon_SCAN];
-    float pointSearchCornerInd2[N_SCAN*Horizon_SCAN];
+    int *pointSelCornerInd;
+    float *pointSearchCornerInd1;
+    float *pointSearchCornerInd2;
 
-    int pointSelSurfInd[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd1[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd2[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd3[N_SCAN*Horizon_SCAN];
+    int *pointSelSurfInd;
+    float *pointSearchSurfInd1;
+    float *pointSearchSurfInd2;
+    float *pointSearchSurfInd3;
 
     float transformCur[6];
     float transformSum[6];
@@ -184,6 +180,15 @@ private:
 
     int frameCount;
     int imuQueLength;
+    float surfThreshold;
+    int nearestFeatureSearchSqDist;
+    float edgeThreshold;
+    int N_SCAN ;
+    int Horizon_SCAN ;
+    float ang_res_x ;
+    float ang_res_y ;
+    float ang_bottom ;
+    int groundScanInd ;
 
 public:
 
@@ -194,6 +199,16 @@ public:
         string imuTopic;
         nh.getParam("imuTopic",imuTopic);
         nh.getParam("imuQueLength",imuQueLength);
+        nh.getParam("surfThreshold",surfThreshold);
+        nh.getParam("nearestFeatureSearchSqDist",nearestFeatureSearchSqDist);
+        nh.getParam("edgeThreshold",edgeThreshold);
+        nh.getParam("N_SCAN",N_SCAN);
+        nh.getParam("Horizon_SCAN",Horizon_SCAN);
+        nh.getParam("ang_res_x",ang_res_x);
+        nh.getParam("ang_res_y",ang_res_y);
+        nh.getParam("ang_bottom",ang_bottom);
+        nh.getParam("groundScanInd",groundScanInd);
+        
         imuTime= new double[imuQueLength];
         imuRoll= new float[imuQueLength];
         imuPitch= new float[imuQueLength];
@@ -213,6 +228,18 @@ public:
         imuAngularRotationX= new float[imuQueLength];
         imuAngularRotationY= new float[imuQueLength];
         imuAngularRotationZ= new float[imuQueLength];
+        pointSelCornerInd= new int [N_SCAN*Horizon_SCAN];
+        pointSearchCornerInd1= new float[N_SCAN*Horizon_SCAN];
+        pointSearchCornerInd2=new float[N_SCAN*Horizon_SCAN];
+
+        pointSelSurfInd= new int[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd1= new float[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd2= new float[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd3= new float[N_SCAN*Horizon_SCAN];
+
+        cloudCurvature= new float[N_SCAN*Horizon_SCAN];
+        cloudNeighborPicked= new int[N_SCAN*Horizon_SCAN];
+        cloudLabel= new int[N_SCAN*Horizon_SCAN];
 
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/segmented_cloud", 1, &FeatureAssociation::laserCloudHandler, this);
         subLaserCloudInfo = nh.subscribe<cloud_msgs::cloud_info>("/segmented_cloud_info", 1, &FeatureAssociation::laserCloudInfoHandler, this);
@@ -675,6 +702,9 @@ public:
             cloudSmoothness[i].value = cloudCurvature[i];
             cloudSmoothness[i].ind = i;
         }
+        delete [] cloudCurvature;
+        delete [] cloudLabel;
+
     }
 
     void markOccludedPoints()
@@ -1187,6 +1217,9 @@ public:
                 }
             }
         }
+        delete [] pointSelCornerInd;
+        delete [] pointSearchCornerInd1;
+        delete [] pointSearchCornerInd2;
     }
 
     void findCorrespondingSurfFeatures(int iterCount){
@@ -1302,6 +1335,9 @@ public:
                 }
             }
         }
+        delete [] pointSearchSurfInd1;
+        delete [] pointSearchSurfInd2;
+        delete [] pointSearchSurfInd3;
     }
 
     bool calculateTransformationSurf(int iterCount){

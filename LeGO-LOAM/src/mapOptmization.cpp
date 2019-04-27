@@ -221,6 +221,18 @@ private:
     bool loopClosureEnableFlag;
     double mappingProcessInterval;
     int imuQueLength;
+    double surroundingKeyframeSearchRadius;
+    double surroundingKeyframeSearchNum;
+    double historyKeyframeSearchRadius;
+    double historyKeyframeSearchNum;
+    double historyKeyframeFitnessScore;
+    float globalMapVisualizationSearchRadius;
+    int N_SCAN ;
+    int Horizon_SCAN ;
+    float ang_res_x ;
+    float ang_res_y ;
+    float ang_bottom ;
+    int groundScanInd ;
 
 public:
 
@@ -233,6 +245,19 @@ public:
         string imuTopic;
         nh.getParam("imuTopic",imuTopic);
         nh.getParam("imuQueLength",imuQueLength);
+        nh.getParam("surroundingKeyframeSearchRadius",surroundingKeyframeSearchRadius);
+        nh.getParam("surroundingKeyframeSearchNum",surroundingKeyframeSearchNum);
+        nh.getParam("historyKeyframeSearchRadius",historyKeyframeSearchRadius);
+        nh.getParam("historyKeyframeSearchNum",historyKeyframeSearchNum);
+        nh.getParam("historyKeyframeFitnessScore",historyKeyframeFitnessScore);
+        nh.getParam("globalMapVisualizationSearchRadius",globalMapVisualizationSearchRadius);
+        nh.getParam("N_SCAN",N_SCAN);
+        nh.getParam("Horizon_SCAN",Horizon_SCAN);
+        nh.getParam("ang_res_x",ang_res_x);
+        nh.getParam("ang_res_y",ang_res_y);
+        nh.getParam("ang_bottom",ang_bottom);
+        nh.getParam("groundScanInd",groundScanInd);
+         
         imuTime= new double[imuQueLength];
         imuRoll= new float[imuQueLength];
         imuPitch= new float[imuQueLength]; 

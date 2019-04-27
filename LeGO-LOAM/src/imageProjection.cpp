@@ -67,7 +67,18 @@ private:
 
     cloud_msgs::cloud_info segMsg;
     std_msgs::Header cloudHeader;
-
+    float sensorMountAngle;
+    float segmentTheta;
+    float segmentValidPointNum;
+    float segmentValidLineNum;
+    float segmentAlphaX;
+    float segmentAlphaY;
+    int N_SCAN ;
+    int Horizon_SCAN ;
+    float ang_res_x ;
+    float ang_res_y ;
+    float ang_bottom ;
+    int groundScanInd ;
     std::vector<std::pair<uint8_t, uint8_t> > neighborIterator;
 
     uint16_t *allPushedIndX;
@@ -91,6 +102,18 @@ public:
         pubSegmentedCloudInfo = nh.advertise<cloud_msgs::cloud_info> ("/segmented_cloud_info", 1);
         pubOutlierCloud = nh.advertise<sensor_msgs::PointCloud2> ("/outlier_cloud", 1);
 
+        nh.getParam("sensorMountAngle",sensorMountAngle);
+        nh.getParam("segmentTheta",segmentTheta);
+        nh.getParam("segmentValidPointNum",segmentValidPointNum);
+        nh.getParam("segmentValidLineNum",segmentValidLineNum);
+        nh.getParam("segmentAlphaX",segmentAlphaX);
+        nh.getParam("segmentAlphaY",segmentAlphaY);
+        nh.getParam("N_SCAN",N_SCAN);
+        nh.getParam("Horizon_SCAN",Horizon_SCAN);
+        nh.getParam("ang_res_x",ang_res_x);
+        nh.getParam("ang_res_y",ang_res_y);
+        nh.getParam("ang_bottom",ang_bottom);
+        nh.getParam("groundScanInd",groundScanInd);
         nanPoint.x = std::numeric_limits<float>::quiet_NaN();
         nanPoint.y = std::numeric_limits<float>::quiet_NaN();
         nanPoint.z = std::numeric_limits<float>::quiet_NaN();
