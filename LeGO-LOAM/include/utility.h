@@ -48,8 +48,6 @@ using namespace std;
 
 typedef pcl::PointXYZI  PointType;
 
-//extern const int systemDelay = 0;
-
 struct smoothness_t{ 
     float value;
     size_t ind;
