@@ -178,9 +178,9 @@ private:
     
     double scanPeriod ;
     
-    std::unique_ptr<double[]> imuTime;
-    std::unique_ptr<float[]> imuRoll;
-    std::unique_ptr<float []>imuPitch;
+    std::vector<double> imuTime;
+    std::vector<float> imuRoll;
+    std::vector<float> imuPitch;
     int imuPointerFront;
     int imuPointerLast;
  
@@ -257,12 +257,7 @@ public:
         nh.getParam("ang_res_y",ang_res_y);
         nh.getParam("ang_bottom",ang_bottom);
         nh.getParam("groundScanInd",groundScanInd);
-        std::unique_ptr<double[]> p1(new double[imuQueLength]());
-        imuTime= std::move(p1);
-        std::unique_ptr<float[]> p2(new float[imuQueLength]());
-        imuRoll= std::move(p2);
-        std::unique_ptr<float[]> p3(new float[imuQueLength]());
-        imuPitch= std::move(p3); 
+     
 
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
@@ -333,6 +328,9 @@ public:
         kdtreeCornerFromMap.reset(new pcl::KdTreeFLANN<PointType>());
         kdtreeSurfFromMap.reset(new pcl::KdTreeFLANN<PointType>());
 
+        imuTime.resize(imuQueLength);
+        imuRoll.resize(imuQueLength);
+        imuPitch.resize(imuQueLength);
         
         nearHistoryCornerKeyFrameCloud.reset(new pcl::PointCloud<PointType>());
         nearHistoryCornerKeyFrameCloudDS.reset(new pcl::PointCloud<PointType>());

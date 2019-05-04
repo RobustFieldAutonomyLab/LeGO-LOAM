@@ -81,9 +81,9 @@ private:
     bool systemInited;
 
     std::vector<smoothness_t> cloudSmoothness;
-    std::unique_ptr<float[]>  cloudCurvature;
-    std::unique_ptr<int[]> cloudNeighborPicked;
-    std::unique_ptr<int[]>  cloudLabel;
+    std::vector<float>  cloudCurvature;
+    std::vector<int> cloudNeighborPicked;
+    std::vector<int>  cloudLabel;
 
     int imuPointerFront;
     int imuPointerLast;
@@ -106,30 +106,30 @@ private:
     float imuAngularRotationXLast, imuAngularRotationYLast, imuAngularRotationZLast;
     float imuAngularFromStartX, imuAngularFromStartY, imuAngularFromStartZ;
     
-    std::unique_ptr<double[]> imuTime;
-    std::unique_ptr<float[]> imuRoll;
-    std::unique_ptr<float[]> imuPitch;
-    std::unique_ptr<float[]> imuYaw;
+    std::vector<double> imuTime;
+    std::vector<float> imuRoll;
+    std::vector<float> imuPitch;
+    std::vector<float> imuYaw;
 
-    std::unique_ptr<float[]> imuAccX;
-    std::unique_ptr<float[]> imuAccY;
-    std::unique_ptr<float[]> imuAccZ;
+    std::vector<float> imuAccX;
+    std::vector<float> imuAccY;
+    std::vector<float> imuAccZ;
 
-    std::unique_ptr<float[]> imuVeloX;
-    std::unique_ptr<float[]> imuVeloY;
-    std::unique_ptr<float[]> imuVeloZ;
+    std::vector<float> imuVeloX;
+    std::vector<float> imuVeloY;
+    std::vector<float> imuVeloZ;
 
-    std::unique_ptr<float[]> imuShiftX;
-    std::unique_ptr<float[]> imuShiftY;
-    std::unique_ptr<float[]> imuShiftZ;
+    std::vector<float> imuShiftX;
+    std::vector<float> imuShiftY;
+    std::vector<float> imuShiftZ;
 
-    std::unique_ptr<float[]> imuAngularVeloX;
-    std::unique_ptr<float[]> imuAngularVeloY;
-    std::unique_ptr<float[]> imuAngularVeloZ;
+    std::vector<float> imuAngularVeloX;
+    std::vector<float> imuAngularVeloY;
+    std::vector<float> imuAngularVeloZ;
 
-    std::unique_ptr<float[]> imuAngularRotationX;
-    std::unique_ptr<float[]> imuAngularRotationY;
-    std::unique_ptr<float[]> imuAngularRotationZ;
+    std::vector<float> imuAngularRotationX;
+    std::vector<float> imuAngularRotationY;
+    std::vector<float> imuAngularRotationZ;
 
     ros::Publisher pubLaserCloudCornerLast;
     ros::Publisher pubLaserCloudSurfLast;
@@ -142,14 +142,14 @@ private:
     int laserCloudCornerLastNum;
     int laserCloudSurfLastNum;
 
-    std::unique_ptr<int[]> pointSelCornerInd;
-    std::unique_ptr<float[]> pointSearchCornerInd1;
-    std::unique_ptr<float[]> pointSearchCornerInd2;
+    std::vector<int> pointSelCornerInd;
+    std::vector<float> pointSearchCornerInd1;
+    std::vector<float> pointSearchCornerInd2;
 
-    std::unique_ptr<int[]> pointSelSurfInd;
-    std::unique_ptr<float[]> pointSearchSurfInd1;
-    std::unique_ptr<float[]> pointSearchSurfInd2;
-    std::unique_ptr<float[]> pointSearchSurfInd3;
+    std::vector<int> pointSelSurfInd;
+    std::vector<float> pointSearchSurfInd1;
+    std::vector<float> pointSearchSurfInd2;
+    std::vector<float> pointSearchSurfInd3;
 
     float transformCur[6];
     float transformSum[6];
@@ -210,68 +210,7 @@ public:
         nh.getParam("ang_bottom",ang_bottom);
         nh.getParam("groundScanInd",groundScanInd);
         
-        std::unique_ptr<double[]> p2(new double[imuQueLength]());
-        imuTime = std::move(p2);
-        std::unique_ptr<float[]> p3(new float[imuQueLength]());
-        imuRoll= std::move(p3);
-        std::unique_ptr<float[]> p4(new float[imuQueLength]());
-        imuPitch= std::move(p4);
-        std::unique_ptr<float[]> p5(new float[imuQueLength]());
-        imuYaw= std::move(p5);
-        std::unique_ptr<float[]> p6(new float[imuQueLength]());
-        imuAccX= std::move(p6);
-        std::unique_ptr<float[]> p7(new float[imuQueLength]());
-        imuAccY= std::move(p7);
-        std::unique_ptr<float[]> p8(new float[imuQueLength]());
-        imuAccZ= std::move(p8);
-        std::unique_ptr<float[]> p9(new float[imuQueLength]());
-        imuVeloX= std::move(p9);
-        std::unique_ptr<float[]> p10(new float[imuQueLength]());
-        imuVeloY= std::move(p10);
-        std::unique_ptr<float[]> p11(new float[imuQueLength]());
-        imuVeloZ= std::move(p11);
-        std::unique_ptr<float[]> p12(new float[imuQueLength]());
-        imuShiftX= std::move(p12);
-        std::unique_ptr<float[]> p13(new float[imuQueLength]());
-        imuShiftY= std::move(p13);
-        std::unique_ptr<float[]> p14(new float[imuQueLength]());
-        imuShiftZ= std::move(p14);
-        std::unique_ptr<float[]> p15(new float[imuQueLength]());
-        imuAngularVeloX= std::move(p15);
-        std::unique_ptr<float[]> p16(new float[imuQueLength]());
-        imuAngularVeloY= std::move(p16);
-        std::unique_ptr<float[]> p17(new float[imuQueLength]());
-        imuAngularVeloZ= std::move(p17);
-        std::unique_ptr<float[]> p18(new float[imuQueLength]());
-        imuAngularRotationX= std::move(p18);
-        std::unique_ptr<float[]> p19(new float[imuQueLength]());
-        imuAngularRotationY= std::move(p19);
-        std::unique_ptr<float[]> p20(new float[imuQueLength]());
-        imuAngularRotationZ= std::move(p20);
-        std::unique_ptr<int[]> p21(new int[N_SCAN*Horizon_SCAN]());
-        pointSelCornerInd= std::move(p21);
-        std::unique_ptr<float[]> p22(new float[N_SCAN*Horizon_SCAN]());
-        pointSearchCornerInd1= std::move(p22);
-        std::unique_ptr<float[]> p23(new float[N_SCAN*Horizon_SCAN]());
-        pointSearchCornerInd2=std::move(p23);
-
-        std::unique_ptr<int[]> p24(new int[N_SCAN*Horizon_SCAN]());
-        pointSelSurfInd= std::move(p24);
-        std::unique_ptr<float[]> p25(new float[N_SCAN*Horizon_SCAN]());
-        
-        pointSearchSurfInd1= std::move(p25);
-        std::unique_ptr<float[]> p26(new float[N_SCAN*Horizon_SCAN]());
-        pointSearchSurfInd2= std::move(p26);
-        std::unique_ptr<float[]> p27(new float[N_SCAN*Horizon_SCAN]());
-        pointSearchSurfInd3= std::move(p27);
-
-        std::unique_ptr<float[]> p28(new float[N_SCAN*Horizon_SCAN]());
-        cloudCurvature= std::move(p28);
-        std::unique_ptr<int[]> p29(new int[N_SCAN*Horizon_SCAN]());
-        cloudNeighborPicked= std::move(p29);
-        std::unique_ptr<int[]> p30(new int[N_SCAN*Horizon_SCAN]());
-        cloudLabel= std::move(p30);
-
+       
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/segmented_cloud", 1, &FeatureAssociation::laserCloudHandler, this);
         subLaserCloudInfo = nh.subscribe<cloud_msgs::cloud_info>("/segmented_cloud_info", 1, &FeatureAssociation::laserCloudInfoHandler, this);
         subOutlierCloud = nh.subscribe<sensor_msgs::PointCloud2>("/outlier_cloud", 1, &FeatureAssociation::outlierCloudHandler, this);
@@ -293,6 +232,38 @@ public:
     void initializationValue()
     {
         cloudSmoothness.resize(N_SCAN*Horizon_SCAN);
+        imuTime.resize(imuQueLength);
+        imuRoll.resize(imuQueLength);
+        imuPitch.resize(imuQueLength);
+        imuYaw.resize(imuQueLength);
+        imuAccX.resize(imuQueLength);
+        imuAccY.resize(imuQueLength);
+        imuAccZ.resize(imuQueLength);
+        imuVeloX.resize(imuQueLength);
+        imuVeloY.resize(imuQueLength);
+        imuVeloZ.resize(imuQueLength);
+        imuShiftX.resize(imuQueLength);
+        imuShiftY.resize(imuQueLength);
+        imuShiftZ.resize(imuQueLength);
+        imuAngularVeloX.resize(imuQueLength);
+        imuAngularVeloY.resize(imuQueLength);
+        imuAngularVeloZ.resize(imuQueLength);
+        imuAngularRotationX.resize(imuQueLength);
+        imuAngularRotationY.resize(imuQueLength);
+        imuAngularRotationZ.resize(imuQueLength);
+        
+        pointSelCornerInd.resize(N_SCAN*Horizon_SCAN);
+        pointSearchCornerInd1.resize(N_SCAN*Horizon_SCAN);
+        pointSearchCornerInd2.resize(N_SCAN*Horizon_SCAN);
+
+        pointSelSurfInd.resize(N_SCAN*Horizon_SCAN);
+        pointSearchSurfInd1.resize(N_SCAN*Horizon_SCAN);
+        pointSearchSurfInd2.resize(N_SCAN*Horizon_SCAN);
+        pointSearchSurfInd3.resize(N_SCAN*Horizon_SCAN);
+
+        cloudCurvature.resize(N_SCAN*Horizon_SCAN);
+        cloudNeighborPicked.resize(N_SCAN*Horizon_SCAN);
+        cloudLabel.resize(N_SCAN*Horizon_SCAN);
 
         downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
 
