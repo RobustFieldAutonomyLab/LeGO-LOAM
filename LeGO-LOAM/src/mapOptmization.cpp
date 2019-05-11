@@ -239,26 +239,7 @@ public:
     mapOptimization():
         nh("~")
     {
-        nh.getParam("loopClosureEnableFlag",loopClosureEnableFlag);   
-        nh.getParam("scanPeriod", scanPeriod);
-        nh.getParam("mappingProcessInterval",mappingProcessInterval);
-        string imuTopic;
-        nh.getParam("imuTopic",imuTopic);
-        nh.getParam("imuQueLength",imuQueLength);
-        nh.getParam("surroundingKeyframeSearchRadius",surroundingKeyframeSearchRadius);
-        nh.getParam("surroundingKeyframeSearchNum",surroundingKeyframeSearchNum);
-        nh.getParam("historyKeyframeSearchRadius",historyKeyframeSearchRadius);
-        nh.getParam("historyKeyframeSearchNum",historyKeyframeSearchNum);
-        nh.getParam("historyKeyframeFitnessScore",historyKeyframeFitnessScore);
-        nh.getParam("globalMapVisualizationSearchRadius",globalMapVisualizationSearchRadius);
-        nh.getParam("N_SCAN",N_SCAN);
-        nh.getParam("Horizon_SCAN",Horizon_SCAN);
-        nh.getParam("ang_res_x",ang_res_x);
-        nh.getParam("ang_res_y",ang_res_y);
-        nh.getParam("ang_bottom",ang_bottom);
-        nh.getParam("groundScanInd",groundScanInd);
-     
-
+        
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
 		parameters.relinearizeSkip = 1;
@@ -272,7 +253,7 @@ public:
         subLaserCloudSurfLast = nh.subscribe<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 2, &mapOptimization::laserCloudSurfLastHandler, this);
         subOutlierCloudLast = nh.subscribe<sensor_msgs::PointCloud2>("/outlier_cloud_last", 2, &mapOptimization::laserCloudOutlierLastHandler, this);
         subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 5, &mapOptimization::laserOdometryHandler, this);
-        subImu = nh.subscribe<sensor_msgs::Imu> (imuTopic, 50, &mapOptimization::imuHandler, this);
+        subImu = nh.subscribe<sensor_msgs::Imu> ("/imu", 50, &mapOptimization::imuHandler, this);
 
         pubHistoryKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("/history_cloud", 2);
         pubIcpKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("/corrected_cloud", 2);
@@ -293,8 +274,28 @@ public:
 
         aftMappedTrans.frame_id_ = "/camera_init";
         aftMappedTrans.child_frame_id_ = "/aft_mapped";
-
+        getParametersFromRos();
         allocateMemory();
+       
+    }
+
+    void getParametersFromRos(){
+        nh.getParam("loopClosureEnableFlag",loopClosureEnableFlag);   
+        nh.getParam("scanPeriod", scanPeriod);
+        nh.getParam("mappingProcessInterval",mappingProcessInterval);
+        nh.getParam("imuQueLength",imuQueLength);
+        nh.getParam("surroundingKeyframeSearchRadius",surroundingKeyframeSearchRadius);
+        nh.getParam("surroundingKeyframeSearchNum",surroundingKeyframeSearchNum);
+        nh.getParam("historyKeyframeSearchRadius",historyKeyframeSearchRadius);
+        nh.getParam("historyKeyframeSearchNum",historyKeyframeSearchNum);
+        nh.getParam("historyKeyframeFitnessScore",historyKeyframeFitnessScore);
+        nh.getParam("globalMapVisualizationSearchRadius",globalMapVisualizationSearchRadius);
+        nh.getParam("N_SCAN",N_SCAN);
+        nh.getParam("Horizon_SCAN",Horizon_SCAN);
+        nh.getParam("ang_res_x",ang_res_x);
+        nh.getParam("ang_res_y",ang_res_y);
+        nh.getParam("ang_bottom",ang_bottom);
+        nh.getParam("groundScanInd",groundScanInd);
     }
 
     void allocateMemory(){
