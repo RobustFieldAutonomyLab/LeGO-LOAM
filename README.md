@@ -32,16 +32,22 @@ When you compile the code for the first time, you need to add "-j1" behind "catk
 ## The system
 
 LeGO-LOAM is speficifally optimized for a horizontally placed VLP-16 on a ground vehicle. It assumes there is always a ground plane in the scan. The UGV we are using is Clearpath Jackal. It has a built-in IMU. 
-![Jackal](/LeGO-LOAM/launch/jackal-label.jpg)
+
 <p align='center'>
-    <img src="/LeGO-LOAM/launch/jackal-label.jpg" alt="drawing" width="300"/>
+    <img src="/LeGO-LOAM/launch/jackal-label.jpg" alt="drawing" width="400"/>
 </p>
 
 The package performs segmentation before feature extraction.
-![Segmentaion](/LeGO-LOAM/launch/seg-total.jpg)
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/seg-total.jpg" alt="drawing" width="400"/>
+</p>
 
 Lidar odometry performs two-step Levenberg Marquardt optimization to get 6D transformation.
-![Odometry](/LeGO-LOAM/launch/odometry.jpg)
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/odometry.jpg" alt="drawing" width="400"/>
+</p>
 
 ## New sensor
 
