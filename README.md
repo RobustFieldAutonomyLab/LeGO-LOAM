@@ -96,10 +96,10 @@ Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly i
 This dataset, [Stevens data-set](https://github.com/TixiaoShan/Stevens-VLP16-Dataset), is captured using a Velodyne VLP-16, which is mounted on an UGV - Clearpath Jackal, on Stevens Institute of Technology campus. The VLP-16 rotation rate is set to 10Hz. This data-set features over 20K scans and many loop-closures. 
 
 <p align='center'>
-    <img src="/LeGO-LOAM/launch/dataset-demo.gif" alt="drawing" width="400"/>
+    <img src="/LeGO-LOAM/launch/dataset-demo.gif" alt="drawing" width="600"/>
 </p>
 <p align='center'>
-    <img src="/LeGO-LOAM/launch/google-earth.png" alt="drawing" width="400"/>  
+    <img src="/LeGO-LOAM/launch/google-earth.png" alt="drawing" width="600"/>  
 </p>
 
 ## Cite *LeGO-LOAM*
