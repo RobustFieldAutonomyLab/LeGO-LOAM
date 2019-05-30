@@ -3,6 +3,7 @@
 This repository contains code for a lightweight and ground optimized lidar odometry and mapping (LeGO-LOAM) system for ROS compatible UGVs. The system takes in point cloud  from a Velodyne VLP-16 Lidar (palced horizontal) and optional IMU data as inputs. It outputs 6D pose estimation in real-time. A demonstration of the system can be found here -> https://www.youtube.com/watch?v=O3tz_ftHV48
 [![Watch the video](/LeGO-LOAM/launch/demo.gif)](https://www.youtube.com/watch?v=O3tz_ftHV48)
 
+
 ## Dependency
 
 - [ROS](http://wiki.ros.org/ROS/Installation) (tested with indigo and kinetic)
@@ -32,6 +33,9 @@ When you compile the code for the first time, you need to add "-j1" behind "catk
 
 LeGO-LOAM is speficifally optimized for a horizontally placed VLP-16 on a ground vehicle. It assumes there is always a ground plane in the scan. The UGV we are using is Clearpath Jackal. It has a built-in IMU. 
 ![Jackal](/LeGO-LOAM/launch/jackal-label.jpg)
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/jackal-label.jpg" alt="drawing" width="300"/>
+</p>
 
 The package performs segmentation before feature extraction.
 ![Segmentaion](/LeGO-LOAM/launch/seg-total.jpg)
