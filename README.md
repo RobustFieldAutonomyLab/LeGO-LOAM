@@ -97,7 +97,7 @@ This dataset, [Stevens data-set](https://github.com/TixiaoShan/Stevens-VLP16-Dat
 
 <p align='center'>
     <img src="/LeGO-LOAM/launch/dataset-demo.gif" alt="drawing" width="400"/>
-    <img src="/LeGO-LOAM/launch/google-earth.jpg" alt="drawing" width="400"/>  
+    <img src="/LeGO-LOAM/launch/google-earth.png" alt="drawing" width="400"/>  
 </p>
 
 ## Cite *LeGO-LOAM*
