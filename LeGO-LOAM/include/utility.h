@@ -66,6 +66,14 @@ extern const int groundScanInd = 7;
 // extern const float ang_bottom = 30.67;
 // extern const int groundScanInd = 20;
 
+// Ouster OS1-16
+// extern const int N_SCAN = 16;
+// extern const int Horizon_SCAN = 1024;
+// extern const float ang_res_x = 360.0/float(Horizon_SCAN);
+// extern const float ang_res_y = 33.2/float(N_SCAN-1);
+// extern const float ang_bottom = 16.6+0.1;
+// extern const int groundScanInd = 7;
+
 // Ouster OS1-64
 // extern const int N_SCAN = 64;
 // extern const int Horizon_SCAN = 1024;
@@ -98,14 +106,16 @@ extern const float edgeThreshold = 0.1;
 extern const float surfThreshold = 0.1;
 extern const float nearestFeatureSearchSqDist = 25;
 
-extern const float surroundingKeyframeSearchRadius = 50.0;
-extern const int   surroundingKeyframeSearchNum = 50;
 
-extern const float historyKeyframeSearchRadius = 5.0;
-extern const int   historyKeyframeSearchNum = 25;
-extern const float historyKeyframeFitnessScore = 0.3;
+// Mapping Params
+extern const float surroundingKeyframeSearchRadius = 50.0; // key frame that is within n meters from current pose will be considerd for scan-to-map optimization (when loop closure disabled)
+extern const int   surroundingKeyframeSearchNum = 50; // submap size (when loop closure enabled)
+// history key frames (history submap for loop closure)
+extern const float historyKeyframeSearchRadius = 7.0; // key frame that is within n meters from current pose will be considerd for loop closure
+extern const int   historyKeyframeSearchNum = 25; // 2n+1 number of hostory key frames will be fused into a submap for loop closure
+extern const float historyKeyframeFitnessScore = 0.3; // the smaller the better alignment
 
-extern const float globalMapVisualizationSearchRadius = 500.0;
+extern const float globalMapVisualizationSearchRadius = 500.0; // key frames with in n meters will be visualized
 
 
 struct smoothness_t{ 
@@ -119,6 +129,9 @@ struct by_value{
     }
 };
 
+/*
+    * A point cloud type that has 6D pose info ([x,y,z,roll,pitch,yaw] intensity is time stamp)
+    */
 struct PointXYZIRPYT
 {
     PCL_ADD_POINT4D
