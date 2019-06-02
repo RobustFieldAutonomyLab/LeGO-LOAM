@@ -79,7 +79,7 @@ extern const int groundScanInd = 20;
 
 One important thing to keep in mind is that our current implementation for range image projection is only suitable for sensors that have evenly distributed channels. If you want to use our algorithm with Velodyne VLP-32c or HDL-64e, you need to write your own implementation for such projection. If the point cloud is not projected properly, you will lose many points and performance.
 
-If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result.
+If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result. Ouster lidar IMU is not supported in the package.
 
 ## Run the package
 
@@ -93,7 +93,7 @@ Notes: The parameter "/use_sim_time" is set to "true" for simulation, "false" to
 ```
 rosbag play *.bag --clock --topic /velodyne_points /imu/data
 ```
-Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608). If your IMU frame doesn't align with Velodyne frame, use of IMU data will cause significant drift. Ouster lidar IMU is not supported in the package.
+Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608). 
 
 ## New data-set
 
