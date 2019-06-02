@@ -70,6 +70,7 @@ extern const int groundScanInd = 7;
 // extern const int groundScanInd = 20;
 
 // Ouster users may need to uncomment line 159 in imageProjection.cpp
+// Usage of Ouster imu data is not supported yet, please just publish point cloud data
 // Ouster OS1-16
 // extern const int N_SCAN = 16;
 // extern const int Horizon_SCAN = 1024;
