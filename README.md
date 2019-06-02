@@ -93,7 +93,7 @@ Notes: The parameter "/use_sim_time" is set to "true" for simulation, "false" to
 ```
 rosbag play *.bag --clock --topic /velodyne_points /imu/data
 ```
-Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608). If your IMU frame doesn't align with Velodyne frame, use of IMU data will cause significant drift.
+Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608). If your IMU frame doesn't align with Velodyne frame, use of IMU data will cause significant drift. Ouster lidar IMU is not supported in the package.
 
 ## New data-set
 
