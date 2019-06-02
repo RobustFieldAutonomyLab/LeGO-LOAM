@@ -50,6 +50,9 @@ using namespace std;
 
 typedef pcl::PointXYZI  PointType;
 
+extern const string pointCloudTopic = "/velodyne_points";
+extern const string imuTopic = "/imu/data";
+
 // VLP-16
 extern const int N_SCAN = 16;
 extern const int Horizon_SCAN = 1800;
@@ -89,8 +92,6 @@ extern const double mappingProcessInterval = 0.3;
 extern const float scanPeriod = 0.1;
 extern const int systemDelay = 0;
 extern const int imuQueLength = 200;
-extern const string imuTopic = "/imu/data";
-
 
 extern const float sensorMountAngle = 0.0;
 extern const float segmentTheta = 60.0/180.0*M_PI; // decrese this value may improve accuracy
