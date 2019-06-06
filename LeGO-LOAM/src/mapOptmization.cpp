@@ -80,26 +80,25 @@ private:
     tf::StampedTransform aftMappedTrans;
     tf::TransformBroadcaster tfBroadcaster;
 
-    vector<pcl::PointCloud<PointType>::Ptr> cornerCloudKeyFrames;
-    vector<pcl::PointCloud<PointType>::Ptr> surfCloudKeyFrames;
-    vector<pcl::PointCloud<PointType>::Ptr> outlierCloudKeyFrames;
+    std::vector<pcl::PointCloud<PointType>::Ptr> cornerCloudKeyFrames;
+    std::vector<pcl::PointCloud<PointType>::Ptr> surfCloudKeyFrames;
+    std::vector<pcl::PointCloud<PointType>::Ptr> outlierCloudKeyFrames;
 
-    deque<pcl::PointCloud<PointType>::Ptr> recentCornerCloudKeyFrames;
-    deque<pcl::PointCloud<PointType>::Ptr> recentSurfCloudKeyFrames;
-    deque<pcl::PointCloud<PointType>::Ptr> recentOutlierCloudKeyFrames;
+    std::deque<pcl::PointCloud<PointType>::Ptr> recentCornerCloudKeyFrames;
+    std::deque<pcl::PointCloud<PointType>::Ptr> recentSurfCloudKeyFrames;
+    std::deque<pcl::PointCloud<PointType>::Ptr> recentOutlierCloudKeyFrames;
     int latestFrameID;
 
-    vector<int> surroundingExistingKeyPosesID;
-    deque<pcl::PointCloud<PointType>::Ptr> surroundingCornerCloudKeyFrames;
-    deque<pcl::PointCloud<PointType>::Ptr> surroundingSurfCloudKeyFrames;
-    deque<pcl::PointCloud<PointType>::Ptr> surroundingOutlierCloudKeyFrames;
+    std::vector<int> surroundingExistingKeyPosesID;
+    std::deque<pcl::PointCloud<PointType>::Ptr> surroundingCornerCloudKeyFrames;
+    std::deque<pcl::PointCloud<PointType>::Ptr> surroundingSurfCloudKeyFrames;
+    std::deque<pcl::PointCloud<PointType>::Ptr> surroundingOutlierCloudKeyFrames;
     
     PointType previousRobotPosPoint;
     PointType currentRobotPosPoint;
 
     pcl::PointCloud<PointType>::Ptr cloudKeyPoses3D;
     pcl::PointCloud<PointTypePose>::Ptr cloudKeyPoses6D;
-
     
 
     pcl::PointCloud<PointType>::Ptr surroundingKeyPoses;

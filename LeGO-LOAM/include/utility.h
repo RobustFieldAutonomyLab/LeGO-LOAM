@@ -43,15 +43,16 @@
 #include <array>
 #include <thread>
 #include <mutex>
+#include <cmath>
 
-#define PI 3.14159265
-
-using namespace std;
+#ifndef M_PI
+#define M_PI 3.14159265
+#endif
 
 typedef pcl::PointXYZI  PointType;
 
-extern const string pointCloudTopic = "/velodyne_points";
-extern const string imuTopic = "/imu/data";
+extern const std::string pointCloudTopic = "/velodyne_points";
+extern const std::string imuTopic = "/imu/data";
 
 // VLP-16
 extern const int N_SCAN = 16;
@@ -152,6 +153,8 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PointXYZIRPYT,
                                    (float, roll, roll) (float, pitch, pitch) (float, yaw, yaw)
                                    (double, time, time)
 )
+
+typedef Eigen::Vector3f Vector3D;
 
 typedef PointXYZIRPYT  PointTypePose;
 
