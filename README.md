@@ -1,12 +1,25 @@
 # LeGO-LOAM
 
 This repository contains code for a lightweight and ground optimized lidar odometry and mapping (LeGO-LOAM) system for ROS compatible UGVs. The system takes in point cloud  from a Velodyne VLP-16 Lidar (palced horizontal) and optional IMU data as inputs. It outputs 6D pose estimation in real-time. A demonstration of the system can be found here -> https://www.youtube.com/watch?v=O3tz_ftHV48
+<!--
 [![Watch the video](/LeGO-LOAM/launch/demo.gif)](https://www.youtube.com/watch?v=O3tz_ftHV48)
+-->
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/demo.gif" alt="drawing" width="800"/>
+</p>
 
 ## Dependency
 
 - [ROS](http://wiki.ros.org/ROS/Installation) (tested with indigo and kinetic)
 - [gtsam](https://github.com/borglab/gtsam/releases) (Georgia Tech Smoothing and Mapping library, 4.0.0-alpha2)
+  ```
+  wget -O ~/Downloads/gtsam.zip https://github.com/borglab/gtsam/archive/4.0.0-alpha2.zip
+  cd ~/Downloads/ && unzip gtsam.zip -d ~/Downloads/
+  cd ~/Downloads/gtsam-4.0.0-alpha2/
+  mkdir build && cd build
+  cmake ..
+  sudo make install
+  ```
 
 ## Compile
 
@@ -23,13 +36,22 @@ When you compile the code for the first time, you need to add "-j1" behind "catk
 ## The system
 
 LeGO-LOAM is speficifally optimized for a horizontally placed VLP-16 on a ground vehicle. It assumes there is always a ground plane in the scan. The UGV we are using is Clearpath Jackal. It has a built-in IMU. 
-![Jackal](/LeGO-LOAM/launch/jackal-label.jpg)
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/jackal-label.jpg" alt="drawing" width="400"/>
+</p>
 
 The package performs segmentation before feature extraction.
-![Segmentaion](/LeGO-LOAM/launch/seg-total.jpg)
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/seg-total.jpg" alt="drawing" width="400"/>
+</p>
 
 Lidar odometry performs two-step Levenberg Marquardt optimization to get 6D transformation.
-![Odometry](/LeGO-LOAM/launch/odometry.jpg)
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/odometry.jpg" alt="drawing" width="400"/>
+</p>
 
 ## New sensor
 
@@ -57,7 +79,7 @@ extern const int groundScanInd = 20;
 
 One important thing to keep in mind is that our current implementation for range image projection is only suitable for sensors that have evenly distributed channels. If you want to use our algorithm with Velodyne VLP-32c or HDL-64e, you need to write your own implementation for such projection. If the point cloud is not projected properly, you will lose many points and performance.
 
-If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result.
+If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result. Ouster lidar IMU is not supported in the package.
 
 ## Run the package
 
@@ -71,11 +93,18 @@ Notes: The parameter "/use_sim_time" is set to "true" for simulation, "false" to
 ```
 rosbag play *.bag --clock --topic /velodyne_points /imu/data
 ```
-Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608) If your IMU frame doesn't align with Velodyne frame, use of IMU data will cause significant drift.
+Notes: Though /imu/data is optinal, it can improve estimation accuracy greatly if provided. Some sample bags can be downloaded from [here](https://github.com/RobustFieldAutonomyLab/jackal_dataset_20170608). 
 
 ## New data-set
 
 This dataset, [Stevens data-set](https://github.com/TixiaoShan/Stevens-VLP16-Dataset), is captured using a Velodyne VLP-16, which is mounted on an UGV - Clearpath Jackal, on Stevens Institute of Technology campus. The VLP-16 rotation rate is set to 10Hz. This data-set features over 20K scans and many loop-closures. 
+
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/dataset-demo.gif" alt="drawing" width="600"/>
+</p>
+<p align='center'>
+    <img src="/LeGO-LOAM/launch/google-earth.png" alt="drawing" width="600"/>  
+</p>
 
 ## Cite *LeGO-LOAM*
 
