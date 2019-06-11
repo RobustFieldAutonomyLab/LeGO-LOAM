@@ -27,7 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "utility.h"
-
+#include <array>
 
 class ImageProjection{
 private:
@@ -55,26 +55,21 @@ private:
     pcl::PointCloud<PointType>::Ptr segmentedCloudPure;
     pcl::PointCloud<PointType>::Ptr outlierCloud;
 
-    PointType nanPoint; // fill in fullCloud at each iteration
-
     cv::Mat rangeMat; // range matrix for range image
     cv::Mat labelMat; // label matrix for segmentaiton marking
     cv::Mat groundMat; // ground matrix for ground cloud marking
     int labelCount;
 
-    float startOrientation;
-    float endOrientation;
-
     cloud_msgs::cloud_info segMsg; // info of segmented cloud
     std_msgs::Header cloudHeader;
 
-    std::vector<std::pair<uint8_t, uint8_t> > neighborIterator; // neighbor iterator for segmentaiton process
+    std::array<std::pair<uint8_t, uint8_t>, 4 > neighborIterator; // neighbor iterator for segmentation process
 
-    uint16_t *allPushedIndX; // array for tracking points of a segmented object
-    uint16_t *allPushedIndY;
+    std::vector<uint16_t> allPushedIndX; // array for tracking points of a segmented object
+    std::vector<uint16_t> allPushedIndY;
 
-    uint16_t *queueIndX; // array for breadth-first search process of segmentation
-    uint16_t *queueIndY;
+    std::vector<uint16_t> queueIndX; // array for breadth-first search process of segmentation
+    std::vector<uint16_t> queueIndY;
 
 public:
     ImageProjection():
@@ -91,17 +86,13 @@ public:
         pubSegmentedCloudInfo = nh.advertise<cloud_msgs::cloud_info> ("/segmented_cloud_info", 1);
         pubOutlierCloud = nh.advertise<sensor_msgs::PointCloud2> ("/outlier_cloud", 1);
 
-        nanPoint.x = std::numeric_limits<float>::quiet_NaN();
-        nanPoint.y = std::numeric_limits<float>::quiet_NaN();
-        nanPoint.z = std::numeric_limits<float>::quiet_NaN();
-        nanPoint.intensity = -1;
-
         allocateMemory();
         resetParameters();
     }
 
     void allocateMemory(){
 
+        const size_t NUM_POINTS =  N_SCAN*Horizon_SCAN;
         laserCloudIn.reset(new pcl::PointCloud<PointType>());
 
         fullCloud.reset(new pcl::PointCloud<PointType>());
@@ -112,27 +103,26 @@ public:
         segmentedCloudPure.reset(new pcl::PointCloud<PointType>());
         outlierCloud.reset(new pcl::PointCloud<PointType>());
 
-        fullCloud->points.resize(N_SCAN*Horizon_SCAN);
-        fullInfoCloud->points.resize(N_SCAN*Horizon_SCAN);
+        fullCloud->points.resize(NUM_POINTS);
+        fullInfoCloud->points.resize(NUM_POINTS);
 
         segMsg.startRingIndex.assign(N_SCAN, 0);
         segMsg.endRingIndex.assign(N_SCAN, 0);
 
-        segMsg.segmentedCloudGroundFlag.assign(N_SCAN*Horizon_SCAN, false);
-        segMsg.segmentedCloudColInd.assign(N_SCAN*Horizon_SCAN, 0);
-        segMsg.segmentedCloudRange.assign(N_SCAN*Horizon_SCAN, 0);
+        segMsg.segmentedCloudGroundFlag.assign(NUM_POINTS, false);
+        segMsg.segmentedCloudColInd.assign(NUM_POINTS, 0);
+        segMsg.segmentedCloudRange.assign(NUM_POINTS, 0);
 
-        std::pair<int8_t, int8_t> neighbor;
-        neighbor.first = -1; neighbor.second =  0; neighborIterator.push_back(neighbor);
-        neighbor.first =  0; neighbor.second =  1; neighborIterator.push_back(neighbor);
-        neighbor.first =  0; neighbor.second = -1; neighborIterator.push_back(neighbor);
-        neighbor.first =  1; neighbor.second =  0; neighborIterator.push_back(neighbor);
+        neighborIterator[0] = {-1, 0};
+        neighborIterator[1] = { 0, 1};
+        neighborIterator[2] = { 0,-1};
+        neighborIterator[3] = { 1, 0};
 
-        allPushedIndX = new uint16_t[N_SCAN*Horizon_SCAN];
-        allPushedIndY = new uint16_t[N_SCAN*Horizon_SCAN];
+        allPushedIndX.resize(NUM_POINTS);
+        allPushedIndY.resize(NUM_POINTS);
 
-        queueIndX = new uint16_t[N_SCAN*Horizon_SCAN];
-        queueIndY = new uint16_t[N_SCAN*Horizon_SCAN];
+        queueIndX.resize(NUM_POINTS);
+        queueIndY.resize(NUM_POINTS);
     }
 
     void resetParameters(){
@@ -146,6 +136,12 @@ public:
         groundMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_8S, cv::Scalar::all(0));
         labelMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_32S, cv::Scalar::all(0));
         labelCount = 1;
+
+        PointType nanPoint; // fill in fullCloud at each iteration
+        nanPoint.x = std::numeric_limits<float>::quiet_NaN();
+        nanPoint.y = std::numeric_limits<float>::quiet_NaN();
+        nanPoint.z = std::numeric_limits<float>::quiet_NaN();
+        nanPoint.intensity = -1;
 
         std::fill(fullCloud->points.begin(), fullCloud->points.end(), nanPoint);
         std::fill(fullInfoCloud->points.begin(), fullInfoCloud->points.end(), nanPoint);
@@ -197,15 +193,11 @@ public:
         // range image projection
         float verticalAngle, horizonAngle, range;
         size_t rowIdn, columnIdn, index, cloudSize; 
-        PointType thisPoint;
 
         cloudSize = laserCloudIn->points.size();
 
-        for (size_t i = 0; i < cloudSize; ++i){
+        for (PointType thisPoint: laserCloudIn->points){
 
-            thisPoint.x = laserCloudIn->points[i].x;
-            thisPoint.y = laserCloudIn->points[i].y;
-            thisPoint.z = laserCloudIn->points[i].z;
             // find the row and column index in the iamge for this point
             verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
             rowIdn = (verticalAngle + ang_bottom) / ang_res_y;
@@ -215,6 +207,7 @@ public:
             horizonAngle = atan2(thisPoint.x, thisPoint.y) * 180 / M_PI;
 
             columnIdn = -round((horizonAngle-90.0)/ang_res_x) + Horizon_SCAN/2;
+
             if (columnIdn >= Horizon_SCAN)
                 columnIdn -= Horizon_SCAN;
 
@@ -371,10 +364,10 @@ public:
             // Mark popped point
             labelMat.at<int>(fromIndX, fromIndY) = labelCount;
             // Loop through all the neighboring grids of popped grid
-            for (auto iter = neighborIterator.begin(); iter != neighborIterator.end(); ++iter){
+            for (const auto& iter: neighborIterator){
                 // new index
-                thisIndX = fromIndX + (*iter).first;
-                thisIndY = fromIndY + (*iter).second;
+                thisIndX = fromIndX + iter.first;
+                thisIndY = fromIndY + iter.second;
                 // index should be within the boundary
                 if (thisIndX < 0 || thisIndX >= N_SCAN)
                     continue;
@@ -392,7 +385,7 @@ public:
                 d2 = std::min(rangeMat.at<float>(fromIndX, fromIndY), 
                               rangeMat.at<float>(thisIndX, thisIndY));
 
-                if ((*iter).first == 0)
+                if (iter.first == 0)
                     alpha = segmentAlphaX;
                 else
                     alpha = segmentAlphaY;
