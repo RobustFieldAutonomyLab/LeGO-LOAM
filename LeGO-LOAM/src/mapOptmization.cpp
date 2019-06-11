@@ -701,10 +701,8 @@ public:
             rate.sleep();
             publishGlobalMap();
         }
-	// save final point cloud
-        string fileName = fileDirectory;
-        fileName.append("finalCloud.pcd");
-        pcl::io::savePCDFileASCII(fileName, *globalMapKeyFramesDS);
+        // save final point cloud
+        pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
 
         string cornerMapString = "/tmp/cornerMap.pcd";
         string surfaceMapString = "/tmp/surfaceMap.pcd";
@@ -726,9 +724,9 @@ public:
         downSizeFilterSurf.setInputCloud(surfaceMapCloud);
         downSizeFilterSurf.filter(*surfaceMapCloudDS);
 
-        pcl::io::savePCDFileASCII(cornerMapString, *cornerMapCloudDS);
-        pcl::io::savePCDFileASCII(surfaceMapString, *surfaceMapCloudDS);
-        pcl::io::savePCDFileASCII(trajectoryString, *cloudKeyPoses3D);
+        pcl::io::savePCDFileASCII(fileDirectory+"cornerMap.pcd", *cornerMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory+"surfaceMap.pcd", *surfaceMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory+"trajectory.pcd", *cloudKeyPoses3D);
     }
 
     void publishGlobalMap(){
@@ -738,10 +736,10 @@ public:
 
         if (cloudKeyPoses3D->points.empty() == true)
             return;
-	// kd-tree to find near key frames to visualize
+	    // kd-tree to find near key frames to visualize
         std::vector<int> pointSearchIndGlobalMap;
         std::vector<float> pointSearchSqDisGlobalMap;
-	// search near key frames to visualize
+	    // search near key frames to visualize
         mtx.lock();
         kdtreeGlobalMap->setInputCloud(cloudKeyPoses3D);
         kdtreeGlobalMap->radiusSearch(currentRobotPosPoint, globalMapVisualizationSearchRadius, pointSearchIndGlobalMap, pointSearchSqDisGlobalMap, 0);
@@ -749,17 +747,17 @@ public:
 
         for (int i = 0; i < pointSearchIndGlobalMap.size(); ++i)
           globalMapKeyPoses->points.push_back(cloudKeyPoses3D->points[pointSearchIndGlobalMap[i]]);
-	// downsample near selected key frames
+	    // downsample near selected key frames
         downSizeFilterGlobalMapKeyPoses.setInputCloud(globalMapKeyPoses);
         downSizeFilterGlobalMapKeyPoses.filter(*globalMapKeyPosesDS);
-	// extract visualized and downsampled key frames
+	    // extract visualized and downsampled key frames
         for (int i = 0; i < globalMapKeyPosesDS->points.size(); ++i){
 			int thisKeyInd = (int)globalMapKeyPosesDS->points[i].intensity;
 			*globalMapKeyFrames += *transformPointCloud(cornerCloudKeyFrames[thisKeyInd],   &cloudKeyPoses6D->points[thisKeyInd]);
 			*globalMapKeyFrames += *transformPointCloud(surfCloudKeyFrames[thisKeyInd],    &cloudKeyPoses6D->points[thisKeyInd]);
 			*globalMapKeyFrames += *transformPointCloud(outlierCloudKeyFrames[thisKeyInd], &cloudKeyPoses6D->points[thisKeyInd]);
         }
-	// downsample visualized points
+	    // downsample visualized points
         downSizeFilterGlobalMapKeyFrames.setInputCloud(globalMapKeyFrames);
         downSizeFilterGlobalMapKeyFrames.filter(*globalMapKeyFramesDS);
  
@@ -772,7 +770,7 @@ public:
         globalMapKeyPoses->clear();
         globalMapKeyPosesDS->clear();
         globalMapKeyFrames->clear();
-        globalMapKeyFramesDS->clear();     
+        // globalMapKeyFramesDS->clear();     
     }
 
     void loopClosureThread(){
