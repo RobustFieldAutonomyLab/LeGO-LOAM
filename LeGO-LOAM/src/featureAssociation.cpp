@@ -33,6 +33,8 @@
 //      IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). October 2018.
 
 #include "utility.h"
+#include <Eigen/Eigenvalues>
+#include <Eigen/QR>
 
 class FeatureAssociation{
 
@@ -177,7 +179,6 @@ private:
     tf::StampedTransform laserOdometryTrans;
 
     bool isDegenerate;
-    cv::Mat matP;
 
     int frameCount;
 
@@ -296,7 +297,6 @@ public:
         laserOdometryTrans.child_frame_id_ = "/laser_odom";
         
         isDegenerate = false;
-        matP = cv::Mat(6, 6, CV_32F, cv::Scalar::all(0));
 
         frameCount = skipFrameNum;
     }
@@ -1258,12 +1258,13 @@ public:
 
         int pointSelNum = laserCloudOri->points.size();
 
-        cv::Mat matA(pointSelNum, 3, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAt(3, pointSelNum, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtA(3, 3, CV_32F, cv::Scalar::all(0));
-        cv::Mat matB(pointSelNum, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtB(3, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matX(3, 1, CV_32F, cv::Scalar::all(0));
+        Eigen::Matrix<float,Eigen::Dynamic,3> matA(pointSelNum, 3);
+        Eigen::Matrix<float,3,Eigen::Dynamic> matAt(3,pointSelNum);
+        Eigen::Matrix<float,3,3> matAtA;
+        Eigen::VectorXf matB(pointSelNum);
+        Eigen::Matrix<float,3,1> matAtB;
+        Eigen::Matrix<float,3,1> matX;
+        Eigen::Matrix<float,3,3> matP;
 
         float srx = sin(transformCur[0]);
         float crx = cos(transformCur[0]);
@@ -1302,49 +1303,52 @@ public:
 
             float d2 = coeff.intensity;
 
-            matA.at<float>(i, 0) = arx;
-            matA.at<float>(i, 1) = arz;
-            matA.at<float>(i, 2) = aty;
-            matB.at<float>(i, 0) = -0.05 * d2;
+            matA(i, 0) = arx;
+            matA(i, 1) = arz;
+            matA(i, 2) = aty;
+            matB(i, 0) = -0.05 * d2;
         }
 
-        cv::transpose(matA, matAt);
+        matAt = matA.transpose();
         matAtA = matAt * matA;
         matAtB = matAt * matB;
-        cv::solve(matAtA, matAtB, matX, cv::DECOMP_QR);
+        matX = matAtA.colPivHouseholderQr().solve(matAtB);
 
         if (iterCount == 0) {
-            cv::Mat matE(1, 3, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV(3, 3, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV2(3, 3, CV_32F, cv::Scalar::all(0));
+            Eigen::Matrix<float,1,3> matE;
+            Eigen::Matrix<float,3,3> matV;
+            Eigen::Matrix<float,3,3> matV2;
 
-            cv::eigen(matAtA, matE, matV);
-            matV.copyTo(matV2);
+            Eigen::SelfAdjointEigenSolver< Eigen::Matrix<float,3,3> > esolver(matAtA);
+            matE = esolver.eigenvalues().real();
+            matV = esolver.eigenvectors().real();
+
+            matV2 = matV;
 
             isDegenerate = false;
             float eignThre[3] = {10, 10, 10};
             for (int i = 2; i >= 0; i--) {
-                if (matE.at<float>(0, i) < eignThre[i]) {
+                if (matE(0, i) < eignThre[i]) {
                     for (int j = 0; j < 3; j++) {
-                        matV2.at<float>(i, j) = 0;
+                        matV2(i, j) = 0;
                     }
                     isDegenerate = true;
                 } else {
                     break;
                 }
             }
-            matP = matV.inv() * matV2;
+            matP = matV.inverse() * matV2;
         }
 
         if (isDegenerate) {
-            cv::Mat matX2(3, 1, CV_32F, cv::Scalar::all(0));
-            matX.copyTo(matX2);
+            Eigen::Matrix<float,3,1> matX2;
+            matX2 = matX;
             matX = matP * matX2;
         }
 
-        transformCur[0] += matX.at<float>(0, 0);
-        transformCur[2] += matX.at<float>(1, 0);
-        transformCur[4] += matX.at<float>(2, 0);
+        transformCur[0] += matX(0, 0);
+        transformCur[2] += matX(1, 0);
+        transformCur[4] += matX(2, 0);
 
         for(int i=0; i<6; i++){
             if(isnan(transformCur[i]))
@@ -1352,10 +1356,10 @@ public:
         }
 
         float deltaR = sqrt(
-                            pow(rad2deg(matX.at<float>(0, 0)), 2) +
-                            pow(rad2deg(matX.at<float>(1, 0)), 2));
+                            pow(rad2deg(matX(0, 0)), 2) +
+                            pow(rad2deg(matX(1, 0)), 2));
         float deltaT = sqrt(
-                            pow(matX.at<float>(2, 0) * 100, 2));
+                            pow(matX(2, 0) * 100, 2));
 
         if (deltaR < 0.1 && deltaT < 0.1) {
             return false;
@@ -1367,12 +1371,13 @@ public:
 
         int pointSelNum = laserCloudOri->points.size();
 
-        cv::Mat matA(pointSelNum, 3, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAt(3, pointSelNum, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtA(3, 3, CV_32F, cv::Scalar::all(0));
-        cv::Mat matB(pointSelNum, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtB(3, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matX(3, 1, CV_32F, cv::Scalar::all(0));
+        Eigen::Matrix<float,Eigen::Dynamic,3> matA(pointSelNum, 3);
+        Eigen::Matrix<float,3,Eigen::Dynamic> matAt(3,pointSelNum);
+        Eigen::Matrix<float,3,3> matAtA;
+        Eigen::VectorXf matB(pointSelNum);
+        Eigen::Matrix<float,3,1> matAtB;
+        Eigen::Matrix<float,3,1> matX;
+        Eigen::Matrix<float,3,3> matP;
 
         float srx = sin(transformCur[0]);
         float crx = cos(transformCur[0]);
@@ -1403,49 +1408,52 @@ public:
 
             float d2 = coeff.intensity;
 
-            matA.at<float>(i, 0) = ary;
-            matA.at<float>(i, 1) = atx;
-            matA.at<float>(i, 2) = atz;
-            matB.at<float>(i, 0) = -0.05 * d2;
+            matA(i, 0) = ary;
+            matA(i, 1) = atx;
+            matA(i, 2) = atz;
+            matB(i, 0) = -0.05 * d2;
         }
 
-        cv::transpose(matA, matAt);
+        matAt = matA.transpose();
         matAtA = matAt * matA;
         matAtB = matAt * matB;
-        cv::solve(matAtA, matAtB, matX, cv::DECOMP_QR);
+        matX = matAtA.colPivHouseholderQr().solve(matAtB);
 
         if (iterCount == 0) {
-            cv::Mat matE(1, 3, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV(3, 3, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV2(3, 3, CV_32F, cv::Scalar::all(0));
+            Eigen::Matrix<float,1, 3> matE;
+            Eigen::Matrix<float,3, 3> matV;
+            Eigen::Matrix<float,3, 3> matV2;
 
-            cv::eigen(matAtA, matE, matV);
-            matV.copyTo(matV2);
+            Eigen::SelfAdjointEigenSolver< Eigen::Matrix<float,3,3> > esolver(matAtA);
+            matE = esolver.eigenvalues().real();
+            matV = esolver.eigenvectors().real();
+
+            matV2 = matV;
 
             isDegenerate = false;
             float eignThre[3] = {10, 10, 10};
             for (int i = 2; i >= 0; i--) {
-                if (matE.at<float>(0, i) < eignThre[i]) {
+                if (matE(0, i) < eignThre[i]) {
                     for (int j = 0; j < 3; j++) {
-                        matV2.at<float>(i, j) = 0;
+                        matV2(i, j) = 0;
                     }
                     isDegenerate = true;
                 } else {
                     break;
                 }
             }
-            matP = matV.inv() * matV2;
+            matP = matV.inverse() * matV2;
         }
 
         if (isDegenerate) {
-            cv::Mat matX2(3, 1, CV_32F, cv::Scalar::all(0));
-            matX.copyTo(matX2);
+            Eigen::Matrix<float,3,1>
+            matX2 = matX;
             matX = matP * matX2;
         }
 
-        transformCur[1] += matX.at<float>(0, 0);
-        transformCur[3] += matX.at<float>(1, 0);
-        transformCur[5] += matX.at<float>(2, 0);
+        transformCur[1] += matX(0, 0);
+        transformCur[3] += matX(1, 0);
+        transformCur[5] += matX(2, 0);
 
         for(int i=0; i<6; i++){
             if(isnan(transformCur[i]))
@@ -1453,10 +1461,10 @@ public:
         }
 
         float deltaR = sqrt(
-                            pow(rad2deg(matX.at<float>(0, 0)), 2));
+                            pow(rad2deg(matX(0, 0)), 2));
         float deltaT = sqrt(
-                            pow(matX.at<float>(1, 0) * 100, 2) +
-                            pow(matX.at<float>(2, 0) * 100, 2));
+                            pow(matX(1, 0) * 100, 2) +
+                            pow(matX(2, 0) * 100, 2));
 
         if (deltaR < 0.1 && deltaT < 0.1) {
             return false;
@@ -1468,12 +1476,13 @@ public:
 
         int pointSelNum = laserCloudOri->points.size();
 
-        cv::Mat matA(pointSelNum, 6, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAt(6, pointSelNum, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtA(6, 6, CV_32F, cv::Scalar::all(0));
-        cv::Mat matB(pointSelNum, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matAtB(6, 1, CV_32F, cv::Scalar::all(0));
-        cv::Mat matX(6, 1, CV_32F, cv::Scalar::all(0));
+        Eigen::Matrix<float,Eigen::Dynamic,6> matA(pointSelNum, 6);
+        Eigen::Matrix<float,6,Eigen::Dynamic> matAt(6,pointSelNum);
+        Eigen::Matrix<float,6,6> matAtA;
+        Eigen::VectorXf matB(pointSelNum);
+        Eigen::Matrix<float,6,1> matAtB;
+        Eigen::Matrix<float,6,1> matX;
+        Eigen::Matrix<float,6,6> matP;
 
         float srx = sin(transformCur[0]);
         float crx = cos(transformCur[0]);
@@ -1519,55 +1528,59 @@ public:
 
             float d2 = coeff.intensity;
 
-            matA.at<float>(i, 0) = arx;
-            matA.at<float>(i, 1) = ary;
-            matA.at<float>(i, 2) = arz;
-            matA.at<float>(i, 3) = atx;
-            matA.at<float>(i, 4) = aty;
-            matA.at<float>(i, 5) = atz;
-            matB.at<float>(i, 0) = -0.05 * d2;
+            matA(i, 0) = arx;
+            matA(i, 1) = ary;
+            matA(i, 2) = arz;
+            matA(i, 3) = atx;
+            matA(i, 4) = aty;
+            matA(i, 5) = atz;
+            matB(i, 0) = -0.05 * d2;
         }
 
-        cv::transpose(matA, matAt);
+        matAt = matA.transpose();
         matAtA = matAt * matA;
         matAtB = matAt * matB;
-        cv::solve(matAtA, matAtB, matX, cv::DECOMP_QR);
+
+        matX = matAtA.colPivHouseholderQr().solve(matAtB);
 
         if (iterCount == 0) {
-            cv::Mat matE(1, 6, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV(6, 6, CV_32F, cv::Scalar::all(0));
-            cv::Mat matV2(6, 6, CV_32F, cv::Scalar::all(0));
+            Eigen::Matrix<float,1, 6> matE;
+            Eigen::Matrix<float,6, 6> matV;
+            Eigen::Matrix<float,6, 6> matV2;
 
-            cv::eigen(matAtA, matE, matV);
-            matV.copyTo(matV2);
+            Eigen::SelfAdjointEigenSolver< Eigen::Matrix<float,6,6> > esolver(matAtA);
+            matE = esolver.eigenvalues().real();
+            matV = esolver.eigenvectors().real();
+
+            matV2 = matV;
 
             isDegenerate = false;
             float eignThre[6] = {10, 10, 10, 10, 10, 10};
             for (int i = 5; i >= 0; i--) {
-                if (matE.at<float>(0, i) < eignThre[i]) {
+                if (matE(0, i) < eignThre[i]) {
                     for (int j = 0; j < 6; j++) {
-                        matV2.at<float>(i, j) = 0;
+                        matV2(i, j) = 0;
                     }
                     isDegenerate = true;
                 } else {
                     break;
                 }
             }
-            matP = matV.inv() * matV2;
+            matP = matV.inverse() * matV2;
         }
 
         if (isDegenerate) {
-            cv::Mat matX2(6, 1, CV_32F, cv::Scalar::all(0));
-            matX.copyTo(matX2);
+            Eigen::Matrix<float,6,1> matX2;
+            matX2 = matX;
             matX = matP * matX2;
         }
 
-        transformCur[0] += matX.at<float>(0, 0);
-        transformCur[1] += matX.at<float>(1, 0);
-        transformCur[2] += matX.at<float>(2, 0);
-        transformCur[3] += matX.at<float>(3, 0);
-        transformCur[4] += matX.at<float>(4, 0);
-        transformCur[5] += matX.at<float>(5, 0);
+        transformCur[0] += matX(0, 0);
+        transformCur[1] += matX(1, 0);
+        transformCur[2] += matX(2, 0);
+        transformCur[3] += matX(3, 0);
+        transformCur[4] += matX(4, 0);
+        transformCur[5] += matX(5, 0);
 
         for(int i=0; i<6; i++){
             if(isnan(transformCur[i]))
@@ -1575,13 +1588,13 @@ public:
         }
 
         float deltaR = sqrt(
-                            pow(rad2deg(matX.at<float>(0, 0)), 2) +
-                            pow(rad2deg(matX.at<float>(1, 0)), 2) +
-                            pow(rad2deg(matX.at<float>(2, 0)), 2));
+                            pow(rad2deg(matX(0, 0)), 2) +
+                            pow(rad2deg(matX(1, 0)), 2) +
+                            pow(rad2deg(matX(2, 0)), 2));
         float deltaT = sqrt(
-                            pow(matX.at<float>(3, 0) * 100, 2) +
-                            pow(matX.at<float>(4, 0) * 100, 2) +
-                            pow(matX.at<float>(5, 0) * 100, 2));
+                            pow(matX(3, 0) * 100, 2) +
+                            pow(matX(4, 0) * 100, 2) +
+                            pow(matX(5, 0) * 100, 2));
 
         if (deltaR < 0.1 && deltaT < 0.1) {
             return false;

@@ -22,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(GTSAM REQUIRED QUIET)
 find_package(PCL REQUIRED QUIET)
-find_package(OpenCV REQUIRED QUIET)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -34,27 +33,25 @@ include_directories(
 	include
 	${catkin_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
-	${OpenCV_INCLUDE_DIRS}
 	${GTSAM_INCLUDE_DIR}
 )
 
 link_directories(
 	include
-	${OpenCV_LIBRARY_DIRS}
 	${PCL_LIBRARY_DIRS}
 	${GTSAM_LIBRARY_DIRS}
 )
 
 add_executable(imageProjection src/imageProjection.cpp)
 add_dependencies(imageProjection ${catkin_EXPORTED_TARGETS} cloud_msgs_gencpp)
-target_link_libraries(imageProjection ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(imageProjection ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(featureAssociation src/featureAssociation.cpp)
 add_dependencies(featureAssociation ${catkin_EXPORTED_TARGETS} cloud_msgs_gencpp)
-target_link_libraries(featureAssociation ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(featureAssociation ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(mapOptmization src/mapOptmization.cpp)
-target_link_libraries(mapOptmization ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} gtsam)
+target_link_libraries(mapOptmization ${catkin_LIBRARIES} ${PCL_LIBRARIES} gtsam)
 
 add_executable(transformFusion src/transformFusion.cpp)
-target_link_libraries(transformFusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(transformFusion ${catkin_LIBRARIES} ${PCL_LIBRARIES})

@@ -8,7 +8,7 @@
 
   <license>BSD</license>
 
-  <author >Tixiao Shan</author>
+  <author>Tixiao Shan</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

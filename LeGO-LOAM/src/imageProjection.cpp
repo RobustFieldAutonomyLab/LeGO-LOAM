@@ -27,7 +27,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "utility.h"
-
+#include <Eigen/Eigenvalues>
+#include <Eigen/QR>
 
 class ImageProjection{
 private:
@@ -57,13 +58,11 @@ private:
 
     PointType nanPoint; // fill in fullCloud at each iteration
 
-    cv::Mat rangeMat; // range matrix for range image
-    cv::Mat labelMat; // label matrix for segmentaiton marking
-    cv::Mat groundMat; // ground matrix for ground cloud marking
-    int labelCount;
+    Eigen::MatrixXf rangeMat; // range matrix for range image
+    Eigen::MatrixXi labelMat; // label matrix for segmentaiton marking
+    Eigen::Matrix<int8_t,Eigen::Dynamic,Eigen::Dynamic> groundMat; // ground matrix for ground cloud marking
 
-    float startOrientation;
-    float endOrientation;
+    int labelCount;
 
     cloud_msgs::cloud_info segMsg; // info of segmented cloud
     std_msgs::Header cloudHeader;
@@ -142,9 +141,14 @@ public:
         segmentedCloudPure->clear();
         outlierCloud->clear();
 
-        rangeMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_32F, cv::Scalar::all(FLT_MAX));
-        groundMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_8S, cv::Scalar::all(0));
-        labelMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_32S, cv::Scalar::all(0));
+        rangeMat.resize(N_SCAN, Horizon_SCAN);
+        groundMat.resize(N_SCAN, Horizon_SCAN);
+        labelMat.resize(N_SCAN, Horizon_SCAN);
+
+        rangeMat.fill(FLT_MAX);
+        groundMat.setZero();
+        labelMat.setZero();
+
         labelCount = 1;
 
         std::fill(fullCloud->points.begin(), fullCloud->points.end(), nanPoint);
@@ -225,7 +229,7 @@ public:
             if (range < 0.1)
                 continue;
             
-            rangeMat.at<float>(rowIdn, columnIdn) = range;
+            rangeMat(rowIdn, columnIdn) = range;
 
             thisPoint.intensity = (float)rowIdn + (float)columnIdn / 10000.0;
 
@@ -252,7 +256,7 @@ public:
                 if (fullCloud->points[lowerInd].intensity == -1 ||
                     fullCloud->points[upperInd].intensity == -1){
                     // no info to check, invalid points
-                    groundMat.at<int8_t>(i,j) = -1;
+                    groundMat(i,j) = -1;
                     continue;
                 }
                     
@@ -263,8 +267,8 @@ public:
                 angle = atan2(diffZ, sqrt(diffX*diffX + diffY*diffY) ) * 180 / M_PI;
 
                 if (abs(angle - sensorMountAngle) <= 10){
-                    groundMat.at<int8_t>(i,j) = 1;
-                    groundMat.at<int8_t>(i+1,j) = 1;
+                    groundMat(i,j) = 1;
+                    groundMat(i+1,j) = 1;
                 }
             }
         }
@@ -273,15 +277,15 @@ public:
         // note that ground remove is from 0~N_SCAN-1, need rangeMat for mark label matrix for the 16th scan
         for (size_t i = 0; i < N_SCAN; ++i){
             for (size_t j = 0; j < Horizon_SCAN; ++j){
-                if (groundMat.at<int8_t>(i,j) == 1 || rangeMat.at<float>(i,j) == FLT_MAX){
-                    labelMat.at<int>(i,j) = -1;
+                if (groundMat(i,j) == 1 || rangeMat(i,j) == FLT_MAX){
+                    labelMat(i,j) = -1;
                 }
             }
         }
         if (pubGroundCloud.getNumSubscribers() != 0){
             for (size_t i = 0; i <= groundScanInd; ++i){
                 for (size_t j = 0; j < Horizon_SCAN; ++j){
-                    if (groundMat.at<int8_t>(i,j) == 1)
+                    if (groundMat(i,j) == 1)
                         groundCloud->push_back(fullCloud->points[j + i*Horizon_SCAN]);
                 }
             }
@@ -292,7 +296,7 @@ public:
         // segmentation process
         for (size_t i = 0; i < N_SCAN; ++i)
             for (size_t j = 0; j < Horizon_SCAN; ++j)
-                if (labelMat.at<int>(i,j) == 0)
+                if (labelMat(i,j) == 0)
                     labelComponents(i, j);
 
         int sizeOfSegCloud = 0;
@@ -302,9 +306,9 @@ public:
             segMsg.startRingIndex[i] = sizeOfSegCloud-1 + 5;
 
             for (size_t j = 0; j < Horizon_SCAN; ++j) {
-                if (labelMat.at<int>(i,j) > 0 || groundMat.at<int8_t>(i,j) == 1){
+                if (labelMat(i,j) > 0 || groundMat(i,j) == 1){
                     // outliers that will not be used for optimization (always continue)
-                    if (labelMat.at<int>(i,j) == 999999){
+                    if (labelMat(i,j) == 999999){
                         if (i > groundScanInd && j % 5 == 0){
                             outlierCloud->push_back(fullCloud->points[j + i*Horizon_SCAN]);
                             continue;
@@ -313,16 +317,16 @@ public:
                         }
                     }
                     // majority of ground points are skipped
-                    if (groundMat.at<int8_t>(i,j) == 1){
+                    if (groundMat(i,j) == 1){
                         if (j%5!=0 && j>5 && j<Horizon_SCAN-5)
                             continue;
                     }
                     // mark ground points so they will not be considered as edge features later
-                    segMsg.segmentedCloudGroundFlag[sizeOfSegCloud] = (groundMat.at<int8_t>(i,j) == 1);
+                    segMsg.segmentedCloudGroundFlag[sizeOfSegCloud] = (groundMat(i,j) == 1);
                     // mark the points' column index for marking occlusion later
                     segMsg.segmentedCloudColInd[sizeOfSegCloud] = j;
                     // save range info
-                    segMsg.segmentedCloudRange[sizeOfSegCloud]  = rangeMat.at<float>(i,j);
+                    segMsg.segmentedCloudRange[sizeOfSegCloud]  = rangeMat(i,j);
                     // save seg cloud
                     segmentedCloud->push_back(fullCloud->points[j + i*Horizon_SCAN]);
                     // size of seg cloud
@@ -337,9 +341,9 @@ public:
         if (pubSegmentedCloudPure.getNumSubscribers() != 0){
             for (size_t i = 0; i < N_SCAN; ++i){
                 for (size_t j = 0; j < Horizon_SCAN; ++j){
-                    if (labelMat.at<int>(i,j) > 0 && labelMat.at<int>(i,j) != 999999){
+                    if (labelMat(i,j) > 0 && labelMat(i,j) != 999999){
                         segmentedCloudPure->push_back(fullCloud->points[j + i*Horizon_SCAN]);
-                        segmentedCloudPure->points.back().intensity = labelMat.at<int>(i,j);
+                        segmentedCloudPure->points.back().intensity = labelMat(i,j);
                     }
                 }
             }
@@ -369,7 +373,7 @@ public:
             --queueSize;
             ++queueStartInd;
             // Mark popped point
-            labelMat.at<int>(fromIndX, fromIndY) = labelCount;
+            labelMat(fromIndX, fromIndY) = labelCount;
             // Loop through all the neighboring grids of popped grid
             for (auto iter = neighborIterator.begin(); iter != neighborIterator.end(); ++iter){
                 // new index
@@ -384,13 +388,13 @@ public:
                 if (thisIndY >= Horizon_SCAN)
                     thisIndY = 0;
                 // prevent infinite loop (caused by put already examined point back)
-                if (labelMat.at<int>(thisIndX, thisIndY) != 0)
+                if (labelMat(thisIndX, thisIndY) != 0)
                     continue;
 
-                d1 = std::max(rangeMat.at<float>(fromIndX, fromIndY), 
-                              rangeMat.at<float>(thisIndX, thisIndY));
-                d2 = std::min(rangeMat.at<float>(fromIndX, fromIndY), 
-                              rangeMat.at<float>(thisIndX, thisIndY));
+                d1 = std::max(rangeMat(fromIndX, fromIndY),
+                              rangeMat(thisIndX, thisIndY));
+                d2 = std::min(rangeMat(fromIndX, fromIndY),
+                              rangeMat(thisIndX, thisIndY));
 
                 if ((*iter).first == 0)
                     alpha = segmentAlphaX;
@@ -406,7 +410,7 @@ public:
                     ++queueSize;
                     ++queueEndInd;
 
-                    labelMat.at<int>(thisIndX, thisIndY) = labelCount;
+                    labelMat(thisIndX, thisIndY) = labelCount;
                     lineCountFlag[thisIndX] = true;
 
                     allPushedIndX[allPushedIndSize] = thisIndX;
@@ -433,7 +437,7 @@ public:
             ++labelCount;
         }else{ // segment is invalid, mark these points
             for (size_t i = 0; i < allPushedIndSize; ++i){
-                labelMat.at<int>(allPushedIndX[i], allPushedIndY[i]) = 999999;
+                labelMat(allPushedIndX[i], allPushedIndY[i]) = 999999;
             }
         }
     }
