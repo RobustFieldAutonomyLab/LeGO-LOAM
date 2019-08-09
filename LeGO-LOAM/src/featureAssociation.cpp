@@ -33,6 +33,7 @@
 //      IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). October 2018.
 
 #include "utility.h"
+#include "nanoflann_pcl.h"
 #include <Eigen/Eigenvalues>
 #include <Eigen/QR>
 
@@ -165,8 +166,8 @@ private:
     pcl::PointCloud<PointType>::Ptr laserCloudOri;
     pcl::PointCloud<PointType>::Ptr coeffSel;
 
-    pcl::KdTreeFLANN<PointType>::Ptr kdtreeCornerLast;
-    pcl::KdTreeFLANN<PointType>::Ptr kdtreeSurfLast;
+    nanoflann::KdTreeFLANN<PointType> kdtreeCornerLast;
+    nanoflann::KdTreeFLANN<PointType> kdtreeSurfLast;
 
     std::vector<int> pointSearchInd;
     std::vector<float> pointSearchSqDis;
@@ -286,9 +287,6 @@ public:
         laserCloudSurfLast.reset(new pcl::PointCloud<PointType>());
         laserCloudOri.reset(new pcl::PointCloud<PointType>());
         coeffSel.reset(new pcl::PointCloud<PointType>());
-
-        kdtreeCornerLast.reset(new pcl::KdTreeFLANN<PointType>());
-        kdtreeSurfLast.reset(new pcl::KdTreeFLANN<PointType>());
 
         laserOdometry.header.frame_id = "/camera_init";
         laserOdometry.child_frame_id = "/laser_odom";
@@ -1038,7 +1036,7 @@ public:
 
             if (iterCount % 5 == 0) {
 
-                kdtreeCornerLast->nearestKSearch(pointSel, 1, pointSearchInd, pointSearchSqDis);
+                kdtreeCornerLast.nearestKSearch(pointSel, 1, pointSearchInd, pointSearchSqDis);
                 int closestPointInd = -1, minPointInd2 = -1;
                 
                 if (pointSearchSqDis[0] < nearestFeatureSearchSqDist) {
@@ -1149,7 +1147,7 @@ public:
 
             if (iterCount % 5 == 0) {
 
-                kdtreeSurfLast->nearestKSearch(pointSel, 1, pointSearchInd, pointSearchSqDis);
+                kdtreeSurfLast.nearestKSearch(pointSel, 1, pointSearchInd, pointSearchSqDis);
                 int closestPointInd = -1, minPointInd2 = -1, minPointInd3 = -1;
 
                 if (pointSearchSqDis[0] < nearestFeatureSearchSqDist) {
@@ -1612,8 +1610,8 @@ public:
         surfPointsLessFlat = laserCloudSurfLast;
         laserCloudSurfLast = laserCloudTemp;
 
-        kdtreeCornerLast->setInputCloud(laserCloudCornerLast);
-        kdtreeSurfLast->setInputCloud(laserCloudSurfLast);
+        kdtreeCornerLast.setInputCloud(laserCloudCornerLast);
+        kdtreeSurfLast.setInputCloud(laserCloudSurfLast);
 
         laserCloudCornerLastNum = laserCloudCornerLast->points.size();
         laserCloudSurfLastNum = laserCloudSurfLast->points.size();
@@ -1783,8 +1781,8 @@ public:
         laserCloudSurfLastNum = laserCloudSurfLast->points.size();
 
         if (laserCloudCornerLastNum > 10 && laserCloudSurfLastNum > 100) {
-            kdtreeCornerLast->setInputCloud(laserCloudCornerLast);
-            kdtreeSurfLast->setInputCloud(laserCloudSurfLast);
+            kdtreeCornerLast.setInputCloud(laserCloudCornerLast);
+            kdtreeSurfLast.setInputCloud(laserCloudSurfLast);
         }
 
         frameCount++;
