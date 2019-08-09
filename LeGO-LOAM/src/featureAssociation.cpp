@@ -454,6 +454,7 @@ public:
         pcl::fromROSMsg(*laserCloudMsg, *segmentedCloud);
 
         newSegmentedCloud = true;
+        runFeatureAssociation();
     }
 
     void outlierCloudHandler(const sensor_msgs::PointCloud2ConstPtr& msgIn){
@@ -464,6 +465,7 @@ public:
         pcl::fromROSMsg(*msgIn, *outlierCloud);
 
         newOutlierCloud = true;
+        runFeatureAssociation();
     }
 
     void laserCloudInfoHandler(const cloud_msgs::cloud_infoConstPtr& msgIn)
@@ -471,6 +473,7 @@ public:
         timeNewSegmentedCloudInfo = msgIn->header.stamp.toSec();
         segInfo = *msgIn;
         newSegmentedCloudInfo = true;
+        runFeatureAssociation();
     }
 
     void adjustDistortion()
@@ -800,47 +803,6 @@ public:
 	        pubSurfPointsLessFlat.publish(laserCloudOutMsg);
 	    }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     void TransformToStart(PointType const * const pi, PointType * const po)
     {
@@ -1814,7 +1776,6 @@ public:
 
     void runFeatureAssociation()
     {
-
         if (newSegmentedCloud && newSegmentedCloudInfo && newOutlierCloud &&
             std::abs(timeNewSegmentedCloudInfo - timeNewSegmentedCloud) < 0.05 &&
             std::abs(timeNewOutlierCloud - timeNewSegmentedCloud) < 0.05){
@@ -1869,16 +1830,7 @@ int main(int argc, char** argv)
 
     FeatureAssociation FA;
 
-    ros::Rate rate(200);
-    while (ros::ok())
-    {
-        ros::spinOnce();
-
-        FA.runFeatureAssociation();
-
-        rate.sleep();
-    }
-    
     ros::spin();
+
     return 0;
 }
