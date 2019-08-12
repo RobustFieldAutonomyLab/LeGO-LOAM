@@ -50,6 +50,8 @@ using namespace std;
 
 typedef pcl::PointXYZI  PointType;
 
+typedef Eigen::Vector3f Vector3;
+
 extern const string pointCloudTopic = "/velodyne_points";
 extern const string imuTopic = "/imu/data";
 
