@@ -34,138 +34,11 @@
 //      IEEE/RSJ International Conference on Intelligent Robots and Systems
 //      (IROS). October 2018.
 
-#include "utility.h"
+#include "featureassociation.h"
 
-class FeatureAssociation {
- private:
-  ros::NodeHandle nh;
+const float RAD2DEG = 180.0/M_PI;
 
-  ros::Subscriber subLaserCloud;
-  ros::Subscriber subLaserCloudInfo;
-  ros::Subscriber subOutlierCloud;
-  ros::Subscriber subImu;
-
-  ros::Publisher pubCornerPointsSharp;
-  ros::Publisher pubCornerPointsLessSharp;
-  ros::Publisher pubSurfPointsFlat;
-  ros::Publisher pubSurfPointsLessFlat;
-
-  pcl::PointCloud<PointType>::Ptr segmentedCloud;
-  pcl::PointCloud<PointType>::Ptr outlierCloud;
-
-  pcl::PointCloud<PointType>::Ptr cornerPointsSharp;
-  pcl::PointCloud<PointType>::Ptr cornerPointsLessSharp;
-  pcl::PointCloud<PointType>::Ptr surfPointsFlat;
-  pcl::PointCloud<PointType>::Ptr surfPointsLessFlat;
-
-  pcl::PointCloud<PointType>::Ptr surfPointsLessFlatScan;
-  pcl::PointCloud<PointType>::Ptr surfPointsLessFlatScanDS;
-
-  pcl::VoxelGrid<PointType> downSizeFilter;
-
-  double timeScanCur;
-  double timeNewSegmentedCloud;
-  double timeNewSegmentedCloudInfo;
-  double timeNewOutlierCloud;
-
-  bool newSegmentedCloud;
-  bool newSegmentedCloudInfo;
-  bool newOutlierCloud;
-
-  cloud_msgs::cloud_info segInfo;
-  std_msgs::Header cloudHeader;
-
-  int systemInitCount;
-  bool systemInited;
-
-  std::vector<smoothness_t> cloudSmoothness;
-  std::vector<float> cloudCurvature;
-  std::vector<int> cloudNeighborPicked;
-  std::vector<int> cloudLabel;
-
-  int imuPointerFront;
-  int imuPointerLast;
-  int imuPointerLastIteration;
-
-  float imuRollStart, imuPitchStart, imuYawStart;
-  float cosImuRollStart, cosImuPitchStart, cosImuYawStart, sinImuRollStart,
-      sinImuPitchStart, sinImuYawStart;
-  float imuRollCur, imuPitchCur, imuYawCur;
-
-  Vector3 imuVeloStart;
-  Vector3 imuShiftStart;
-
-  Vector3 imuVeloCur;
-  Vector3 imuShiftCur;
-
-  Vector3 imuShiftFromStartCur;
-  Vector3 imuVeloFromStartCur;
-
-  Vector3 imuAngularRotationCur;
-  Vector3 imuAngularRotationLast;
-  Vector3 imuAngularFromStart;
-
-  double imuTime[imuQueLength];
-  float imuRoll[imuQueLength];
-  float imuPitch[imuQueLength];
-  float imuYaw[imuQueLength];
-
-  Vector3 imuAcc[imuQueLength];
-  Vector3 imuVelo[imuQueLength];
-  Vector3 imuShift[imuQueLength];
-  Vector3 imuAngularVelo[imuQueLength];
-  Vector3 imuAngularRotation[imuQueLength];
-
-  ros::Publisher pubLaserCloudCornerLast;
-  ros::Publisher pubLaserCloudSurfLast;
-  ros::Publisher pubLaserOdometry;
-  ros::Publisher _pub_outlier_cloudLast;
-
-  int skipFrameNum;
-  bool systemInitedLM;
-
-  int laserCloudCornerLastNum;
-  int laserCloudSurfLastNum;
-
-  std::vector<int> pointSelCornerInd;
-  std::vector<float> pointSearchCornerInd1;
-  std::vector<float> pointSearchCornerInd2;
-
-  std::vector<int> pointSelSurfInd;
-  std::vector<float> pointSearchSurfInd1;
-  std::vector<float> pointSearchSurfInd2;
-  std::vector<float> pointSearchSurfInd3;
-
-  float transformCur[6];
-  float transformSum[6];
-
-  float imuRollLast, imuPitchLast, imuYawLast;
-  Vector3 imuShiftFromStart;
-  Vector3 imuVeloFromStart;
-
-  pcl::PointCloud<PointType>::Ptr laserCloudCornerLast;
-  pcl::PointCloud<PointType>::Ptr laserCloudSurfLast;
-  pcl::PointCloud<PointType>::Ptr laserCloudOri;
-  pcl::PointCloud<PointType>::Ptr coeffSel;
-
-  pcl::KdTreeFLANN<PointType>::Ptr kdtreeCornerLast;
-  pcl::KdTreeFLANN<PointType>::Ptr kdtreeSurfLast;
-
-  std::vector<int> pointSearchInd;
-  std::vector<float> pointSearchSqDis;
-
-  nav_msgs::Odometry laserOdometry;
-
-  tf::TransformBroadcaster tfBroadcaster;
-  tf::StampedTransform laserOdometryTrans;
-
-  bool isDegenerate;
-  cv::Mat matP;
-
-  int frameCount;
-
- public:
-  FeatureAssociation() : nh("~") {
+FeatureAssociation::FeatureAssociation(ros::NodeHandle& node) : nh(node) {
     subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>(
         "/segmented_cloud", 1, &FeatureAssociation::laserCloudHandler, this);
     subLaserCloudInfo = nh.subscribe<cloud_msgs::cloud_info>(
@@ -197,7 +70,7 @@ class FeatureAssociation {
     initializationValue();
   }
 
-  void initializationValue() {
+  void FeatureAssociation::initializationValue() {
     cloudSmoothness.resize(N_SCAN * HORIZONTAL_SCAN);
 
     downSizeFilter.setLeafSize(0.2, 0.2, 0.2);
@@ -315,7 +188,7 @@ class FeatureAssociation {
     frameCount = skipFrameNum;
   }
 
-  void updateImuRollPitchYawStartSinCos() {
+  void FeatureAssociation::updateImuRollPitchYawStartSinCos() {
     cosImuRollStart = cos(imuRollStart);
     cosImuPitchStart = cos(imuPitchStart);
     cosImuYawStart = cos(imuYawStart);
@@ -324,7 +197,7 @@ class FeatureAssociation {
     sinImuYawStart = sin(imuYawStart);
   }
 
-  void ShiftToStartIMU(float pointTime) {
+  void FeatureAssociation::ShiftToStartIMU(float pointTime) {
     imuShiftFromStartCur = imuShiftCur - imuShiftStart - imuVeloStart * pointTime;
 
     float x1 = cosImuYawStart * imuShiftFromStartCur.x() -
@@ -342,7 +215,7 @@ class FeatureAssociation {
     imuShiftFromStartCur.z() = z2;
   }
 
-  void VeloToStartIMU() {
+  void FeatureAssociation::VeloToStartIMU() {
     imuVeloFromStartCur = imuVeloCur - imuVeloStart;
 
     float x1 = cosImuYawStart * imuVeloFromStartCur.x() -
@@ -360,7 +233,7 @@ class FeatureAssociation {
     imuVeloFromStartCur.z() = z2;
   }
 
-  void TransformToStartIMU(PointType *p) {
+  void FeatureAssociation::TransformToStartIMU(PointType *p) {
     float x1 = cos(imuRollCur) * p->x - sin(imuRollCur) * p->y;
     float y1 = sin(imuRollCur) * p->x + cos(imuRollCur) * p->y;
     float z1 = p->z;
@@ -386,7 +259,7 @@ class FeatureAssociation {
     p->z = z5 + imuShiftFromStartCur.z();
   }
 
-  void AccumulateIMUShiftAndRotation() {
+  void FeatureAssociation::AccumulateIMUShiftAndRotation() {
     float roll = imuRoll[imuPointerLast];
     float pitch = imuPitch[imuPointerLast];
     float yaw = imuYaw[imuPointerLast];
@@ -419,7 +292,7 @@ class FeatureAssociation {
     }
   }
 
-  void imuHandler(const sensor_msgs::Imu::ConstPtr &imuIn) {
+  void FeatureAssociation::imuHandler(const sensor_msgs::Imu::ConstPtr &imuIn) {
     double roll, pitch, yaw;
     tf::Quaternion orientation;
     tf::quaternionMsgToTF(imuIn->orientation, orientation);
@@ -445,7 +318,7 @@ class FeatureAssociation {
     AccumulateIMUShiftAndRotation();
   }
 
-  void laserCloudHandler(
+  void FeatureAssociation::laserCloudHandler(
       const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg) {
     cloudHeader = laserCloudMsg->header;
 
@@ -458,7 +331,7 @@ class FeatureAssociation {
     newSegmentedCloud = true;
   }
 
-  void outlierCloudHandler(const sensor_msgs::PointCloud2ConstPtr &msgIn) {
+  void FeatureAssociation::outlierCloudHandler(const sensor_msgs::PointCloud2ConstPtr &msgIn) {
     timeNewOutlierCloud = msgIn->header.stamp.toSec();
 
     outlierCloud->clear();
@@ -467,13 +340,13 @@ class FeatureAssociation {
     newOutlierCloud = true;
   }
 
-  void laserCloudInfoHandler(const cloud_msgs::cloud_infoConstPtr &msgIn) {
+  void FeatureAssociation::laserCloudInfoHandler(const cloud_msgs::cloud_infoConstPtr &msgIn) {
     timeNewSegmentedCloudInfo = msgIn->header.stamp.toSec();
     segInfo = *msgIn;
     newSegmentedCloudInfo = true;
   }
 
-  void adjustDistortion() {
+  void FeatureAssociation::adjustDistortion() {
     bool halfPassed = false;
     int cloudSize = segmentedCloud->points.size();
 
@@ -597,7 +470,7 @@ class FeatureAssociation {
     imuPointerLastIteration = imuPointerLast;
   }
 
-  void calculateSmoothness() {
+  void FeatureAssociation::calculateSmoothness() {
     int cloudSize = segmentedCloud->points.size();
     for (int i = 5; i < cloudSize - 5; i++) {
       float diffRange = segInfo.segmentedCloudRange[i - 5] +
@@ -622,7 +495,7 @@ class FeatureAssociation {
     }
   }
 
-  void markOccludedPoints() {
+  void FeatureAssociation::markOccludedPoints() {
     int cloudSize = segmentedCloud->points.size();
 
     for (int i = 5; i < cloudSize - 6; ++i) {
@@ -660,7 +533,7 @@ class FeatureAssociation {
     }
   }
 
-  void extractFeatures() {
+  void FeatureAssociation::extractFeatures() {
     cornerPointsSharp->clear();
     cornerPointsLessSharp->clear();
     surfPointsFlat->clear();
@@ -768,7 +641,7 @@ class FeatureAssociation {
     }
   }
 
-  void publishCloud() {
+  void FeatureAssociation::publishCloud() {
     sensor_msgs::PointCloud2 laserCloudOutMsg;
 
     if (pubCornerPointsSharp.getNumSubscribers() != 0) {
@@ -800,7 +673,7 @@ class FeatureAssociation {
     }
   }
 
-  void TransformToStart(PointType const *const pi, PointType *const po) {
+  void FeatureAssociation::TransformToStart(PointType const *const pi, PointType *const po) {
     float s = 10 * (pi->intensity - int(pi->intensity));
 
     float rx = s * transformCur[0];
@@ -824,7 +697,7 @@ class FeatureAssociation {
     po->intensity = pi->intensity;
   }
 
-  void TransformToEnd(PointType const *const pi, PointType *const po) {
+  void FeatureAssociation::TransformToEnd(PointType const *const pi, PointType *const po) {
     float s = 10 * (pi->intensity - int(pi->intensity));
 
     float rx = s * transformCur[0];
@@ -893,7 +766,7 @@ class FeatureAssociation {
     po->intensity = int(pi->intensity);
   }
 
-  void PluginIMURotation(float bcx, float bcy, float bcz, float blx, float bly,
+  void FeatureAssociation::PluginIMURotation(float bcx, float bcy, float bcz, float blx, float bly,
                          float blz, float alx, float aly, float alz, float &acx,
                          float &acy, float &acz) {
     float sbcx = sin(bcx);
@@ -986,7 +859,7 @@ class FeatureAssociation {
     acz = atan2(srzcrx / cos(acx), crzcrx / cos(acx));
   }
 
-  void AccumulateRotation(float cx, float cy, float cz, float lx, float ly,
+  void FeatureAssociation::AccumulateRotation(float cx, float cy, float cz, float lx, float ly,
                           float lz, float &ox, float &oy, float &oz) {
     float srx = cos(lx) * cos(cx) * sin(ly) * sin(cz) -
                 cos(cx) * cos(cz) * sin(lx) - cos(lx) * cos(ly) * sin(cx);
@@ -1013,11 +886,7 @@ class FeatureAssociation {
     oz = atan2(srzcrx / cos(ox), crzcrx / cos(ox));
   }
 
-  double rad2deg(double radians) { return radians * 180.0 / M_PI; }
-
-  double deg2rad(double degrees) { return degrees * M_PI / 180.0; }
-
-  void findCorrespondingCornerFeatures(int iterCount) {
+  void FeatureAssociation::findCorrespondingCornerFeatures(int iterCount) {
     int cornerPointsSharpNum = cornerPointsSharp->points.size();
 
     for (int i = 0; i < cornerPointsSharpNum; i++) {
@@ -1135,7 +1004,7 @@ class FeatureAssociation {
     }
   }
 
-  void findCorrespondingSurfFeatures(int iterCount) {
+  void FeatureAssociation::findCorrespondingSurfFeatures(int iterCount) {
     int surfPointsFlatNum = surfPointsFlat->points.size();
 
     for (int i = 0; i < surfPointsFlatNum; i++) {
@@ -1257,7 +1126,7 @@ class FeatureAssociation {
     }
   }
 
-  bool calculateTransformationSurf(int iterCount) {
+  bool FeatureAssociation::calculateTransformationSurf(int iterCount) {
     int pointSelNum = laserCloudOri->points.size();
 
     cv::Mat matA(pointSelNum, 3, CV_32F, cv::Scalar::all(0));
@@ -1368,11 +1237,11 @@ class FeatureAssociation {
     transformCur[4] += matX.at<float>(2, 0);
 
     for (int i = 0; i < 6; i++) {
-      if (isnan(transformCur[i])) transformCur[i] = 0;
+      if (std::isnan(transformCur[i])) transformCur[i] = 0;
     }
 
-    float deltaR = sqrt(pow(rad2deg(matX.at<float>(0, 0)), 2) +
-                        pow(rad2deg(matX.at<float>(1, 0)), 2));
+    float deltaR = sqrt(pow(RAD2DEG*(matX.at<float>(0, 0)), 2) +
+                        pow(RAD2DEG*(matX.at<float>(1, 0)), 2));
     float deltaT = sqrt(pow(matX.at<float>(2, 0) * 100, 2));
 
     if (deltaR < 0.1 && deltaT < 0.1) {
@@ -1381,7 +1250,7 @@ class FeatureAssociation {
     return true;
   }
 
-  bool calculateTransformationCorner(int iterCount) {
+  bool FeatureAssociation::calculateTransformationCorner(int iterCount) {
     int pointSelNum = laserCloudOri->points.size();
 
     cv::Mat matA(pointSelNum, 3, CV_32F, cv::Scalar::all(0));
@@ -1471,10 +1340,10 @@ class FeatureAssociation {
     transformCur[5] += matX.at<float>(2, 0);
 
     for (int i = 0; i < 6; i++) {
-      if (isnan(transformCur[i])) transformCur[i] = 0;
+      if (std::isnan(transformCur[i])) transformCur[i] = 0;
     }
 
-    float deltaR = sqrt(pow(rad2deg(matX.at<float>(0, 0)), 2));
+    float deltaR = sqrt(pow(RAD2DEG*(matX.at<float>(0, 0)), 2));
     float deltaT = sqrt(pow(matX.at<float>(1, 0) * 100, 2) +
                         pow(matX.at<float>(2, 0) * 100, 2));
 
@@ -1484,7 +1353,7 @@ class FeatureAssociation {
     return true;
   }
 
-  bool calculateTransformation(int iterCount) {
+  bool FeatureAssociation::calculateTransformation(int iterCount) {
     int pointSelNum = laserCloudOri->points.size();
 
     cv::Mat matA(pointSelNum, 6, CV_32F, cv::Scalar::all(0));
@@ -1613,12 +1482,12 @@ class FeatureAssociation {
     transformCur[5] += matX.at<float>(5, 0);
 
     for (int i = 0; i < 6; i++) {
-      if (isnan(transformCur[i])) transformCur[i] = 0;
+      if (std::isnan(transformCur[i])) transformCur[i] = 0;
     }
 
-    float deltaR = sqrt(pow(rad2deg(matX.at<float>(0, 0)), 2) +
-                        pow(rad2deg(matX.at<float>(1, 0)), 2) +
-                        pow(rad2deg(matX.at<float>(2, 0)), 2));
+    float deltaR = sqrt(pow(RAD2DEG*(matX.at<float>(0, 0)), 2) +
+                        pow(RAD2DEG*(matX.at<float>(1, 0)), 2) +
+                        pow(RAD2DEG*(matX.at<float>(2, 0)), 2));
     float deltaT = sqrt(pow(matX.at<float>(3, 0) * 100, 2) +
                         pow(matX.at<float>(4, 0) * 100, 2) +
                         pow(matX.at<float>(5, 0) * 100, 2));
@@ -1629,7 +1498,7 @@ class FeatureAssociation {
     return true;
   }
 
-  void checkSystemInitialization() {
+  void FeatureAssociation::checkSystemInitialization() {
     pcl::PointCloud<PointType>::Ptr laserCloudTemp = cornerPointsLessSharp;
     cornerPointsLessSharp = laserCloudCornerLast;
     laserCloudCornerLast = laserCloudTemp;
@@ -1662,7 +1531,7 @@ class FeatureAssociation {
     systemInitedLM = true;
   }
 
-  void updateInitialGuess() {
+  void FeatureAssociation::updateInitialGuess() {
     imuPitchLast = imuPitchCur;
     imuYawLast = imuYawCur;
     imuRollLast = imuRollCur;
@@ -1685,7 +1554,7 @@ class FeatureAssociation {
     }
   }
 
-  void updateTransformation() {
+  void FeatureAssociation::updateTransformation() {
     if (laserCloudCornerLastNum < 10 || laserCloudSurfLastNum < 100) return;
 
     for (int iterCount1 = 0; iterCount1 < 25; iterCount1++) {
@@ -1709,7 +1578,7 @@ class FeatureAssociation {
     }
   }
 
-  void integrateTransformation() {
+  void FeatureAssociation::integrateTransformation() {
     float rx, ry, rz, tx, ty, tz;
     AccumulateRotation(transformSum[0], transformSum[1], transformSum[2],
                        -transformCur[0], -transformCur[1], -transformCur[2], rx,
@@ -1740,7 +1609,7 @@ class FeatureAssociation {
     transformSum[5] = tz;
   }
 
-  void publishOdometry() {
+  void FeatureAssociation::publishOdometry() {
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw(
         transformSum[2], -transformSum[0], -transformSum[1]);
 
@@ -1762,7 +1631,7 @@ class FeatureAssociation {
     tfBroadcaster.sendTransform(laserOdometryTrans);
   }
 
-  void adjustOutlierCloud() {
+  void FeatureAssociation::adjustOutlierCloud() {
     PointType point;
     int cloudSize = outlierCloud->points.size();
     for (int i = 0; i < cloudSize; ++i) {
@@ -1774,7 +1643,7 @@ class FeatureAssociation {
     }
   }
 
-  void publishCloudsLast() {
+  void FeatureAssociation::publishCloudsLast() {
     updateImuRollPitchYawStartSinCos();
 
     int cornerPointsLessSharpNum = cornerPointsLessSharp->points.size();
@@ -1831,7 +1700,7 @@ class FeatureAssociation {
     }
   }
 
-  void runFeatureAssociation() {
+  void FeatureAssociation::runFeatureAssociation() {
     if (newSegmentedCloud && newSegmentedCloudInfo && newOutlierCloud &&
         std::abs(timeNewSegmentedCloudInfo - timeNewSegmentedCloud) < 0.05 &&
         std::abs(timeNewOutlierCloud - timeNewSegmentedCloud) < 0.05) {
@@ -1870,7 +1739,7 @@ class FeatureAssociation {
 
     publishCloudsLast();  // cloud to mapOptimization
   }
-};
+
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "lego_loam");
