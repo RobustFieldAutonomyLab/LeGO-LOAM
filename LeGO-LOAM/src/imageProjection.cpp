@@ -28,9 +28,13 @@
 
 #include "imageProjection.h"
 
-ImageProjection::ImageProjection(ros::NodeHandle& nh, size_t N_scan,
-                                 size_t horizontal_scan)
-    : _nh(nh), _N_scan(N_scan), _horizon_scan(horizontal_scan) {
+ImageProjection::ImageProjection(ros::NodeHandle& nh,
+                                 size_t N_scan,
+                                 size_t horizontal_scan,
+                                 Channel<ProjectionOut>& output_channel)
+    : _nh(nh), _N_scan(N_scan), _horizon_scan(horizontal_scan),
+      _output_channel(output_channel)
+{
   _sub_laser_cloud = nh.subscribe<sensor_msgs::PointCloud2>(
       pointCloudTopic, 1, &ImageProjection::cloudHandler, this);
 
@@ -62,13 +66,6 @@ ImageProjection::ImageProjection(ros::NodeHandle& nh, size_t N_scan,
   _full_cloud->points.resize(cloud_size);
   _full_info_cloud->points.resize(cloud_size);
 
-  _seg_msg.startRingIndex.assign(_N_scan, 0);
-  _seg_msg.endRingIndex.assign(_N_scan, 0);
-
-  _seg_msg.segmentedCloudGroundFlag.assign(cloud_size, false);
-  _seg_msg.segmentedCloudColInd.assign(cloud_size, 0);
-  _seg_msg.segmentedCloudRange.assign(cloud_size, 0);
-
   _all_pushed_X.resize(cloud_size);
   _all_pushed_Y.resize(cloud_size);
 
@@ -77,6 +74,7 @@ ImageProjection::ImageProjection(ros::NodeHandle& nh, size_t N_scan,
 }
 
 void ImageProjection::resetParameters() {
+  const size_t cloud_size = _N_scan * _horizon_scan;
   PointType nanPoint;
   nanPoint.x = std::numeric_limits<float>::quiet_NaN();
   nanPoint.y = std::numeric_limits<float>::quiet_NaN();
@@ -97,6 +95,13 @@ void ImageProjection::resetParameters() {
   std::fill(_full_cloud->points.begin(), _full_cloud->points.end(), nanPoint);
   std::fill(_full_info_cloud->points.begin(), _full_info_cloud->points.end(),
             nanPoint);
+
+  _seg_msg.startRingIndex.assign(_N_scan, 0);
+  _seg_msg.endRingIndex.assign(_N_scan, 0);
+
+  _seg_msg.segmentedCloudGroundFlag.assign(cloud_size, false);
+  _seg_msg.segmentedCloudColInd.assign(cloud_size, 0);
+  _seg_msg.segmentedCloudRange.assign(cloud_size, 0);
 }
 
 void ImageProjection::cloudHandler(
@@ -402,16 +407,18 @@ void ImageProjection::publishClouds() {
   if (_pub_segmented_cloud_info.getNumSubscribers() != 0) {
     _pub_segmented_cloud_info.publish(_seg_msg);
   }
+
+  //--------------------
+  ProjectionOut out;
+  out.outlier_cloud.reset(new pcl::PointCloud<PointType>());
+  out.segmented_cloud.reset(new pcl::PointCloud<PointType>());
+
+  std::swap( out.seg_msg, _seg_msg);
+  std::swap(out.outlier_cloud, _outlier_cloud);
+  std::swap(out.segmented_cloud, _segmented_cloud);
+
+  _output_channel.send( std::move(out) );
+
 }
 
-int main(int argc, char** argv) {
-  ros::init(argc, argv, "lego_loam");
 
-  ros::NodeHandle nh("~");
-  ImageProjection IP(nh, N_SCAN, HORIZONTAL_SCAN);
-
-  ROS_INFO("\033[1;32m---->\033[0m Image Projection Started.");
-
-  ros::spin();
-  return 0;
-}

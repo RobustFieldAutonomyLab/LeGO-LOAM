@@ -25,7 +25,7 @@ template<class T> class Channel {
     _cv.wait(lock, [&](){ return _empty; });
     _item = std::move(item);
     _empty = false;
-    _cv.notify_one();
+    _cv.notify_all();
   }
 
   // Copy an item into the channel.
@@ -35,7 +35,7 @@ template<class T> class Channel {
     _cv.wait(lock, [&](){ return _empty; });
     _item = item;
     _empty = false;
-    _cv.notify_one();
+    _cv.notify_all();
   }
 
   // Move an item out of the channel.
@@ -45,7 +45,7 @@ template<class T> class Channel {
     _cv.wait(lock, [&](){ return !_empty; });
     item = std::move(_item);
     _empty = true;
-    _cv.notify_one();
+    _cv.notify_all();
   }
 };
 

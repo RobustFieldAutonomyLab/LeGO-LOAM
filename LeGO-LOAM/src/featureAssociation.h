@@ -2,25 +2,29 @@
 #define FEATUREASSOCIATION_H
 
 #include "utility.h"
+#include "channel.h"
 
 class FeatureAssociation {
 
  public:
-  FeatureAssociation( ros::NodeHandle& node );
+  FeatureAssociation( ros::NodeHandle& node,
+                     size_t N_scan,
+                     size_t horizontal_scan,
+                     Channel<ProjectionOut>& input_channel);
 
   void imuHandler(const sensor_msgs::Imu::ConstPtr &imuIn) ;
-  void outlierCloudHandler(const sensor_msgs::PointCloud2ConstPtr &msgIn);
-  void laserCloudHandler( const sensor_msgs::PointCloud2ConstPtr &msgIn);
-  void laserCloudInfoHandler(const cloud_msgs::cloud_infoConstPtr &msgIn);
-  void publishCloud();
   void runFeatureAssociation();
 
  private:
   ros::NodeHandle& nh;
 
-  ros::Subscriber subLaserCloud;
-  ros::Subscriber subLaserCloudInfo;
-  ros::Subscriber subOutlierCloud;
+  const size_t _N_scan;
+  const size_t _horizontal_scan;
+
+  std::mutex _imu_mutex;
+
+  Channel<ProjectionOut>& _input_channel;
+
   ros::Subscriber subImu;
 
   ros::Publisher pubCornerPointsSharp;
@@ -42,13 +46,6 @@ class FeatureAssociation {
   pcl::VoxelGrid<PointType> downSizeFilter;
 
   double timeScanCur;
-  double timeNewSegmentedCloud;
-  double timeNewSegmentedCloudInfo;
-  double timeNewOutlierCloud;
-
-  bool newSegmentedCloud;
-  bool newSegmentedCloudInfo;
-  bool newOutlierCloud;
 
   cloud_msgs::cloud_info segInfo;
   std_msgs::Header cloudHeader;
@@ -176,6 +173,7 @@ class FeatureAssociation {
   void updateTransformation();
 
   void integrateTransformation();
+  void publishCloud();
   void publishOdometry();
 
   void adjustOutlierCloud();

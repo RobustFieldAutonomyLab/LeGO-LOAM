@@ -2,11 +2,15 @@
 #define IMAGEPROJECTION_H
 
 #include "utility.h"
+#include "channel.h"
 
 class ImageProjection {
  public:
 
-  ImageProjection(ros::NodeHandle& nh, size_t N_scan, size_t horizontal_scan);
+  ImageProjection(ros::NodeHandle& nh,
+                  size_t N_scan,
+                  size_t horizontal_scan,
+                  Channel<ProjectionOut>& output_channel);
 
   ~ImageProjection() = default;
 
@@ -32,6 +36,9 @@ class ImageProjection {
   pcl::PointCloud<PointType>::Ptr _outlier_cloud;
 
   ros::NodeHandle& _nh;
+  const size_t _N_scan;
+  const size_t _horizon_scan;
+  Channel<ProjectionOut>& _output_channel;
 
   ros::Subscriber _sub_laser_cloud;
 
@@ -46,8 +53,6 @@ class ImageProjection {
 
   cloud_msgs::cloud_info _seg_msg;
 
-  const size_t _N_scan;
-  const size_t _horizon_scan;
   int _label_count;
 
   cv::Mat _range_mat;   // range matrix for range image
