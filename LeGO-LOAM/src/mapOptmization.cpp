@@ -602,7 +602,7 @@ void MapOptimization::publishGlobalMap() {
   globalMapKeyPoses->clear();
   globalMapKeyPosesDS->clear();
   globalMapKeyFrames->clear();
-  globalMapKeyFramesDS->clear();
+  //globalMapKeyFramesDS->clear();
 }
 
 bool MapOptimization::detectLoopClosure() {

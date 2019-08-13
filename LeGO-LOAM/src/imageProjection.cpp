@@ -159,6 +159,7 @@ void ImageProjection::projectPointCloud() {
     size_t index = columnIdn + rowIdn * _horizon_scan;
     _full_cloud->points[index] = thisPoint;
     // the corresponding range of a point is saved as "intensity"
+    _full_info_cloud->points[index] = thisPoint;
     _full_info_cloud->points[index].intensity = range;
   }
 }
