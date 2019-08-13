@@ -34,12 +34,12 @@ Visualization Manager:
   Class: ""
   Displays:
     - Class: rviz/Axes
-      Enabled: false
+      Enabled: true
       Length: 1
       Name: base_link
       Radius: 0.300000012
       Reference Frame: base_link
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -52,7 +52,7 @@ Visualization Manager:
       Color: 0; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 96
@@ -69,7 +69,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -82,7 +82,7 @@ Visualization Manager:
       Color: 255; 170; 255
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 96
@@ -99,12 +99,12 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 8.24061012
-        Min Value: -3.8172965
+        Max Value: 5.30034256
+        Min Value: -10.0452499
         Value: true
       Axis: Y
       Channel Name: intensity
@@ -112,7 +112,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 15
@@ -129,7 +129,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: false
       Use rainbow: false
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -145,7 +145,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 657
+      Max Intensity: 123
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Trajectory
