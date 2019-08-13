@@ -40,11 +40,13 @@ const float RAD2DEG = 180.0 / M_PI;
 
 FeatureAssociation::FeatureAssociation(ros::NodeHandle &node, size_t N_scan,
                                        size_t horizontal_scan,
-                                       Channel<ProjectionOut> &input_channel)
+                                       Channel<ProjectionOut> &input_channel,
+                                       Channel<AssociationOut> &output_channel)
     : nh(node),
       _N_scan(N_scan),
       _horizontal_scan(horizontal_scan),
-      _input_channel(input_channel) {
+      _input_channel(input_channel),
+      _output_channel(output_channel) {
   subImu = nh.subscribe<sensor_msgs::Imu>(
       imuTopic, 50, &FeatureAssociation::imuHandler, this);
 
@@ -57,15 +59,24 @@ FeatureAssociation::FeatureAssociation(ros::NodeHandle &node, size_t N_scan,
   pubSurfPointsLessFlat =
       nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_less_flat", 1);
 
-  pubLaserCloudCornerLast =
+  _pub_cloud_corner_last =
       nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_corner_last", 2);
-  pubLaserCloudSurfLast =
+  _pub_cloud_surf_last =
       nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surf_last", 2);
   _pub_outlier_cloudLast =
       nh.advertise<sensor_msgs::PointCloud2>("/outlier_cloud_last", 2);
   pubLaserOdometry = nh.advertise<nav_msgs::Odometry>("/laser_odom_to_init", 5);
 
+  cycle_count = 0;
   initializationValue();
+
+  _run_thread = std::thread (&FeatureAssociation::runFeatureAssociation, this);
+}
+
+FeatureAssociation::~FeatureAssociation()
+{
+  _input_channel.send({});
+  _run_thread.join();
 }
 
 void FeatureAssociation::initializationValue() {
@@ -536,6 +547,9 @@ void FeatureAssociation::extractFeatures() {
 
           cloudNeighborPicked[ind] = 1;
           for (int l = 1; l <= 5; l++) {
+            if( ind + l >= segInfo.segmentedCloudColInd.size() ) {
+              continue;
+            }
             int columnDiff =
                 std::abs(int(segInfo.segmentedCloudColInd[ind + l] -
                              segInfo.segmentedCloudColInd[ind + l - 1]));
@@ -543,6 +557,9 @@ void FeatureAssociation::extractFeatures() {
             cloudNeighborPicked[ind + l] = 1;
           }
           for (int l = -1; l >= -5; l--) {
+            if( ind + l < 0 ) {
+              continue;
+            }
             int columnDiff =
                 std::abs(int(segInfo.segmentedCloudColInd[ind + l] -
                              segInfo.segmentedCloudColInd[ind + l + 1]));
@@ -568,17 +585,23 @@ void FeatureAssociation::extractFeatures() {
 
           cloudNeighborPicked[ind] = 1;
           for (int l = 1; l <= 5; l++) {
+            if( ind + l >= segInfo.segmentedCloudColInd.size() ) {
+              continue;
+            }
             int columnDiff =
-                std::abs(int(segInfo.segmentedCloudColInd[ind + l] -
-                             segInfo.segmentedCloudColInd[ind + l - 1]));
+                std::abs(int(segInfo.segmentedCloudColInd.at(ind + l) -
+                             segInfo.segmentedCloudColInd.at(ind + l - 1)));
             if (columnDiff > 10) break;
 
             cloudNeighborPicked[ind + l] = 1;
           }
           for (int l = -1; l >= -5; l--) {
+            if (ind + l < 0) {
+              continue;
+            }
             int columnDiff =
-                std::abs(int(segInfo.segmentedCloudColInd[ind + l] -
-                             segInfo.segmentedCloudColInd[ind + l + 1]));
+                std::abs(int(segInfo.segmentedCloudColInd.at(ind + l) -
+                             segInfo.segmentedCloudColInd.at(ind + l + 1)));
             if (columnDiff > 10) break;
 
             cloudNeighborPicked[ind + l] = 1;
@@ -598,38 +621,6 @@ void FeatureAssociation::extractFeatures() {
     downSizeFilter.filter(*surfPointsLessFlatScanDS);
 
     *surfPointsLessFlat += *surfPointsLessFlatScanDS;
-  }
-}
-
-void FeatureAssociation::publishCloud() {
-  sensor_msgs::PointCloud2 laserCloudOutMsg;
-
-  if (pubCornerPointsSharp.getNumSubscribers() != 0) {
-    pcl::toROSMsg(*cornerPointsSharp, laserCloudOutMsg);
-    laserCloudOutMsg.header.stamp = cloudHeader.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera";
-    pubCornerPointsSharp.publish(laserCloudOutMsg);
-  }
-
-  if (pubCornerPointsLessSharp.getNumSubscribers() != 0) {
-    pcl::toROSMsg(*cornerPointsLessSharp, laserCloudOutMsg);
-    laserCloudOutMsg.header.stamp = cloudHeader.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera";
-    pubCornerPointsLessSharp.publish(laserCloudOutMsg);
-  }
-
-  if (pubSurfPointsFlat.getNumSubscribers() != 0) {
-    pcl::toROSMsg(*surfPointsFlat, laserCloudOutMsg);
-    laserCloudOutMsg.header.stamp = cloudHeader.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera";
-    pubSurfPointsFlat.publish(laserCloudOutMsg);
-  }
-
-  if (pubSurfPointsLessFlat.getNumSubscribers() != 0) {
-    pcl::toROSMsg(*surfPointsLessFlat, laserCloudOutMsg);
-    laserCloudOutMsg.header.stamp = cloudHeader.stamp;
-    laserCloudOutMsg.header.frame_id = "/camera";
-    pubSurfPointsLessFlat.publish(laserCloudOutMsg);
   }
 }
 
@@ -1477,13 +1468,13 @@ void FeatureAssociation::checkSystemInitialization() {
   pcl::toROSMsg(*laserCloudCornerLast, laserCloudCornerLast2);
   laserCloudCornerLast2.header.stamp = cloudHeader.stamp;
   laserCloudCornerLast2.header.frame_id = "/camera";
-  pubLaserCloudCornerLast.publish(laserCloudCornerLast2);
+  _pub_cloud_corner_last.publish(laserCloudCornerLast2);
 
   sensor_msgs::PointCloud2 laserCloudSurfLast2;
   pcl::toROSMsg(*laserCloudSurfLast, laserCloudSurfLast2);
   laserCloudSurfLast2.header.stamp = cloudHeader.stamp;
   laserCloudSurfLast2.header.frame_id = "/camera";
-  pubLaserCloudSurfLast.publish(laserCloudSurfLast2);
+  _pub_cloud_surf_last.publish(laserCloudSurfLast2);
 
   transformSum[0] += imuPitchStart;
   transformSum[2] += imuRollStart;
@@ -1569,6 +1560,18 @@ void FeatureAssociation::integrateTransformation() {
   transformSum[5] = tz;
 }
 
+void FeatureAssociation::adjustOutlierCloud() {
+  PointType point;
+  int cloudSize = outlierCloud->points.size();
+  for (int i = 0; i < cloudSize; ++i) {
+    point.x = outlierCloud->points[i].y;
+    point.y = outlierCloud->points[i].z;
+    point.z = outlierCloud->points[i].x;
+    point.intensity = outlierCloud->points[i].intensity;
+    outlierCloud->points[i] = point;
+  }
+}
+
 void FeatureAssociation::publishOdometry() {
   geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw(
       transformSum[2], -transformSum[0], -transformSum[1]);
@@ -1591,16 +1594,23 @@ void FeatureAssociation::publishOdometry() {
   tfBroadcaster.sendTransform(laserOdometryTrans);
 }
 
-void FeatureAssociation::adjustOutlierCloud() {
-  PointType point;
-  int cloudSize = outlierCloud->points.size();
-  for (int i = 0; i < cloudSize; ++i) {
-    point.x = outlierCloud->points[i].y;
-    point.y = outlierCloud->points[i].z;
-    point.z = outlierCloud->points[i].x;
-    point.intensity = outlierCloud->points[i].intensity;
-    outlierCloud->points[i] = point;
-  }
+void FeatureAssociation::publishCloud() {
+  sensor_msgs::PointCloud2 laserCloudOutMsg;
+
+  auto Publish = [&](ros::Publisher &pub,
+                     const pcl::PointCloud<PointType>::Ptr &cloud) {
+    if (pub.getNumSubscribers() != 0) {
+      pcl::toROSMsg(*cloud, laserCloudOutMsg);
+      laserCloudOutMsg.header.stamp = cloudHeader.stamp;
+      laserCloudOutMsg.header.frame_id = "/camera";
+      pub.publish(laserCloudOutMsg);
+    }
+  };
+
+  Publish(pubCornerPointsSharp, cornerPointsSharp);
+  Publish(pubCornerPointsLessSharp, cornerPointsLessSharp);
+  Publish(pubSurfPointsFlat, surfPointsFlat);
+  Publish(pubSurfPointsLessFlat, surfPointsLessFlat);
 }
 
 void FeatureAssociation::publishCloudsLast() {
@@ -1635,45 +1645,44 @@ void FeatureAssociation::publishCloudsLast() {
   }
 
   frameCount++;
+  adjustOutlierCloud();
 
   if (frameCount >= skipFrameNum + 1) {
     frameCount = 0;
+    sensor_msgs::PointCloud2 cloudTemp;
 
-    adjustOutlierCloud();
-    sensor_msgs::PointCloud2 outlierCloudLast2;
-    pcl::toROSMsg(*outlierCloud, outlierCloudLast2);
-    outlierCloudLast2.header.stamp = cloudHeader.stamp;
-    outlierCloudLast2.header.frame_id = "/camera";
-    _pub_outlier_cloudLast.publish(outlierCloudLast2);
+    auto Publish = [&](ros::Publisher &pub,
+                       const pcl::PointCloud<PointType>::Ptr &cloud) {
+      if (pub.getNumSubscribers() != 0) {
+        pcl::toROSMsg(*cloud, cloudTemp);
+        cloudTemp.header.stamp = cloudHeader.stamp;
+        cloudTemp.header.frame_id = "/camera";
+        pub.publish(cloudTemp);
+      }
+    };
 
-    sensor_msgs::PointCloud2 laserCloudCornerLast2;
-    pcl::toROSMsg(*laserCloudCornerLast, laserCloudCornerLast2);
-    laserCloudCornerLast2.header.stamp = cloudHeader.stamp;
-    laserCloudCornerLast2.header.frame_id = "/camera";
-    pubLaserCloudCornerLast.publish(laserCloudCornerLast2);
-
-    sensor_msgs::PointCloud2 laserCloudSurfLast2;
-    pcl::toROSMsg(*laserCloudSurfLast, laserCloudSurfLast2);
-    laserCloudSurfLast2.header.stamp = cloudHeader.stamp;
-    laserCloudSurfLast2.header.frame_id = "/camera";
-    pubLaserCloudSurfLast.publish(laserCloudSurfLast2);
+    Publish(_pub_outlier_cloudLast, outlierCloud);
+    Publish(_pub_cloud_corner_last, laserCloudCornerLast);
+    Publish(_pub_cloud_surf_last, laserCloudSurfLast);
   }
 }
 
 void FeatureAssociation::runFeatureAssociation() {
-  while (true) {
-
+  while (ros::ok()) {
     ProjectionOut projection;
     _input_channel.receive(projection);
 
+    if( !ros::ok() ) break;
+
+    //--------------
+    std::lock_guard<std::mutex> lock(_imu_mutex);
+
     outlierCloud = projection.outlier_cloud;
     segmentedCloud = projection.segmented_cloud;
-    segInfo = projection.seg_msg;
+    segInfo = std::move(projection.seg_msg);
 
     cloudHeader = segInfo.header;
     timeScanCur = cloudHeader.stamp.toSec();
-
-    std::lock_guard<std::mutex> lock(_imu_mutex);
 
     /**  1. Feature Extraction  */
     adjustDistortion();
@@ -1686,9 +1695,7 @@ void FeatureAssociation::runFeatureAssociation() {
 
     publishCloud();  // cloud for visualization
 
-    /**
-      2. Feature Association
-          */
+    // Feature Association
     if (!systemInitedLM) {
       checkSystemInitialization();
       continue;
@@ -1703,5 +1710,24 @@ void FeatureAssociation::runFeatureAssociation() {
     publishOdometry();
 
     publishCloudsLast();  // cloud to mapOptimization
+
+    //--------------
+    cycle_count++;
+
+    if (cycle_count == mappingFrequencyDivider) {
+      cycle_count = 0;
+      AssociationOut out;
+      out.cloud_corner_last.reset(new pcl::PointCloud<PointType>());
+      out.cloud_surf_last.reset(new pcl::PointCloud<PointType>());
+      out.cloud_outlier_last.reset(new pcl::PointCloud<PointType>());
+
+      *out.cloud_corner_last = *laserCloudCornerLast;
+      *out.cloud_surf_last = *laserCloudSurfLast;
+      *out.cloud_outlier_last = *outlierCloud;
+
+      out.laser_odometry = laserOdometry;
+
+      _output_channel.send(std::move(out));
+    }
   }
 }

@@ -10,7 +10,10 @@ class FeatureAssociation {
   FeatureAssociation( ros::NodeHandle& node,
                      size_t N_scan,
                      size_t horizontal_scan,
-                     Channel<ProjectionOut>& input_channel);
+                     Channel<ProjectionOut>& input_channel,
+                     Channel<AssociationOut>& output_channel);
+
+  ~FeatureAssociation();
 
   void imuHandler(const sensor_msgs::Imu::ConstPtr &imuIn) ;
   void runFeatureAssociation();
@@ -22,8 +25,10 @@ class FeatureAssociation {
   const size_t _horizontal_scan;
 
   std::mutex _imu_mutex;
+  std::thread _run_thread;
 
   Channel<ProjectionOut>& _input_channel;
+  Channel<AssociationOut>& _output_channel;
 
   ros::Subscriber subImu;
 
@@ -91,8 +96,8 @@ class FeatureAssociation {
   Vector3 imuAngularVelo[imuQueLength];
   Vector3 imuAngularRotation[imuQueLength];
 
-  ros::Publisher pubLaserCloudCornerLast;
-  ros::Publisher pubLaserCloudSurfLast;
+  ros::Publisher _pub_cloud_corner_last;
+  ros::Publisher _pub_cloud_surf_last;
   ros::Publisher pubLaserOdometry;
   ros::Publisher _pub_outlier_cloudLast;
 
@@ -138,7 +143,7 @@ class FeatureAssociation {
   cv::Mat matP;
 
   int frameCount;
-
+  size_t cycle_count;
 
  private:
   void initializationValue();

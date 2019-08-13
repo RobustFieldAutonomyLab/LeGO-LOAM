@@ -14,11 +14,16 @@
 
   <build_depend>roscpp</build_depend>
   <run_depend>roscpp</run_depend>
+
   <build_depend>rospy</build_depend>
   <run_depend>rospy</run_depend>
+
   <build_depend>ros_bridge</build_depend>
   <run_depend>ros_bridge</run_depend>
-  
+
+  <build_depend>rosbag_storage</build_depend>
+  <run_depend>rosbag_storage</run_depend>
+
   <build_depend>tf</build_depend>
   <run_depend>tf</run_depend>
 

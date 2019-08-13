@@ -12,17 +12,20 @@ template<class T> class Channel {
  private:
   T _item;
   bool _empty;
+  bool _blocking_send;
   std::mutex _m;
   std::condition_variable _cv;
  public:
 
-  Channel(): _empty(true) {}
+  Channel(bool blocking_send ): _empty(true), _blocking_send(blocking_send) {}
 
   // Move an item into the channel.
   // Block if not empty
   void send(T&& item) {
     std::unique_lock<std::mutex> lock(_m);
-    _cv.wait(lock, [&](){ return _empty; });
+    if(_blocking_send){
+      _cv.wait(lock, [&](){ return _empty; });
+    }
     _item = std::move(item);
     _empty = false;
     _cv.notify_all();
@@ -32,7 +35,9 @@ template<class T> class Channel {
   // Block if not empty
   void send(const T &item) {
     std::unique_lock<std::mutex> lock(_m);
-    _cv.wait(lock, [&](){ return _empty; });
+    if(_blocking_send){
+      _cv.wait(lock, [&](){ return _empty; });
+    }
     _item = item;
     _empty = false;
     _cv.notify_all();
@@ -47,6 +52,7 @@ template<class T> class Channel {
     _empty = true;
     _cv.notify_all();
   }
+
 };
 
 #endif // CHANNEL_H

@@ -84,11 +84,12 @@ static const int groundScanInd = 7;
 // static const float ang_res_y = 33.2/float(N_SCAN-1);
 // static const float ang_bottom = 16.6+0.1;
 // static const int groundScanInd = 15;
+static const float scanPeriod = 0.1;
 
 static const bool loopClosureEnableFlag = false;
-static const double mappingProcessInterval = 0.3;
+static const size_t mappingFrequencyDivider = 3;
+static const double mappingProcessInterval = scanPeriod*mappingFrequencyDivider;
 
-static const float scanPeriod = 0.1;
 static const int systemDelay = 0;
 static const int imuQueLength = 200;
 
@@ -137,6 +138,30 @@ struct ProjectionOut
   cloud_msgs::cloud_info seg_msg;
 };
 
+
+struct AssociationOut
+{
+  pcl::PointCloud<PointType>::Ptr cloud_outlier_last;
+  pcl::PointCloud<PointType>::Ptr cloud_corner_last;
+  pcl::PointCloud<PointType>::Ptr cloud_surf_last;
+  nav_msgs::Odometry laser_odometry;
+};
+
+inline void OdometryToTransform(const nav_msgs::Odometry& odometry,
+                                float* transform) {
+  double roll, pitch, yaw;
+  geometry_msgs::Quaternion geoQuat = odometry.pose.pose.orientation;
+  tf::Matrix3x3(tf::Quaternion(geoQuat.z, -geoQuat.x, -geoQuat.y, geoQuat.w))
+      .getRPY(roll, pitch, yaw);
+
+  transform[0] = -pitch;
+  transform[1] = -yaw;
+  transform[2] = roll;
+
+  transform[3] = odometry.pose.pose.position.x;
+  transform[4] = odometry.pose.pose.position.y;
+  transform[5] = odometry.pose.pose.position.z;
+}
 
 /*
     * A point cloud type that has 6D pose info ([x,y,z,roll,pitch,yaw] intensity is time stamp)

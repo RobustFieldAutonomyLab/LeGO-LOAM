@@ -11,11 +11,16 @@
     <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0 0 0 -1.570795 -1.570795 0        /camera /base_link   10" />
 
     <!--- LeGO-LOAM -->    
-    <node pkg="lego_loam" type="lego_loam"    name="lego_loam"    output="screen" >
-       <remap from="/velodyne_points" to="/ns2/rslidar_points"/>
-    </node>
+    <arg name="rosbag"  default=""/>
+    <arg name="imu_topic" default="/imu/data"/>
+    <arg name="lidar_topic" default="/velodyne_points"/>
 
-    <node pkg="lego_loam" type="mapOptmization"     name="mapOptmization"     output="screen"/>
-    <node pkg="lego_loam" type="transformFusion"    name="transformFusion"    output="screen"/>
+    <node pkg="lego_loam" type="lego_loam"    name="lego_loam"    output="screen" >
+       <remap from="/velodyne_points" to="$(arg lidar_topic)"/>
+       <remap from="/imu/data" to="$(arg imu_topic)"/>
+       <param name="rosbag"      value="$(arg rosbag)" type="string" />
+       <param name="imu_topic"   value="$(arg imu_topic)" type="string" />
+       <param name="lidar_topic" value="$(arg lidar_topic)" type="string" />
+    </node>
 
 </launch>

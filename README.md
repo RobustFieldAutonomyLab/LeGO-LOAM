@@ -1,5 +1,30 @@
-# LeGO-LOAM
+# LeGO-LOAM-BOR
 
+This is a fork of the original [LeGO-LOAM](https://github.com/RobustFieldAutonomyLab/LeGO-LOAM).
+
+This is a "friendly fork", in other words, we will be happy to work with the original authors to merge
+these improvements with the original LeGO-LOAM... if they want to!
+
+The original author deserves all the credits, we just use good software engineering practices to
+make the code more readable and efficient
+
+The purpose of this fork is:
+
+- To improve the quality of the code, making it more readable, consistent and easier to understand and modify.
+- To remove hard-coded values and use proper configuration files to describe the hardware.
+- To improve performance, in terms of amount of CPU used to calculate the same result.
+- To convert a multi-process application into a single-process / multi-threading one; this makes the algorithm
+  more deterministic and slightly faster.
+- To make it easier and faster to work with rosbags: processing a rosbag should be done at maximum
+  speed allowed by the CPU and in a deterministic way.
+- As a consequence of the previous point, creating unit and regression tests will be easier.
+
+The purpose of this fork (for the time being) is **not** to modify and/or improve the original algorithm.
+
+Please do not submit to this repository any issue related to the algorithm, since we are focusing on the
+software implementation.
+
+# LeGO-LOAM
 This repository contains code for a lightweight and ground optimized lidar odometry and mapping (LeGO-LOAM) system for ROS compatible UGVs. The system takes in point cloud  from a Velodyne VLP-16 Lidar (palced horizontal) and optional IMU data as inputs. It outputs 6D pose estimation in real-time. A demonstration of the system can be found here -> https://www.youtube.com/watch?v=O3tz_ftHV48
 <!--
 [![Watch the video](/LeGO-LOAM/launch/demo.gif)](https://www.youtube.com/watch?v=O3tz_ftHV48)
