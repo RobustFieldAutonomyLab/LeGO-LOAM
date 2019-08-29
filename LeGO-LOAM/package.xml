@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<package>
+  <name>lego_loam</name>
+  <version>1.0.0</version>
+  <description>LeGO-LOAM from IROS 2018</description>
+
+  <maintainer email="xxx@xxx.xxx">Tixiao Shan</maintainer>
+
+  <license>BSD</license>
+
+  <author >Tixiao Shan</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <run_depend>roscpp</run_depend>
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+  <build_depend>ros_bridge</build_depend>
+  <run_depend>ros_bridge</run_depend>
+  
+  <build_depend>tf</build_depend>
+  <run_depend>tf</run_depend>
+
+  <build_depend>pcl_ros</build_depend>
+  <run_depend>pcl_ros</run_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <run_depend>pcl_conversions</run_depend>
+
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+
+  <build_depend>std_msgs</build_depend>
+  <run_depend>std_msgs</run_depend>
+  <build_depend>cloud_msgs</build_depend>
+  <run_depend>cloud_msgs</run_depend>
+  <build_depend>sensors_msgs</build_depend>
+  <run_depend>sensors_msgs</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <build_depend>nav_msgs</build_depend>
+  <run_depend>nav_msgs</run_depend>
+
+  <build_depend>image_transport</build_depend>
+  <run_depend>image_transport</run_depend>
+  
+  <build_depend>gtsam</build_depend>
+  <run_depend>gtsam</run_depend>
+
+</package>
