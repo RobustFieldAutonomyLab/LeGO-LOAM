@@ -119,3 +119,14 @@ Thank you for citing our *LeGO-LOAM* paper if you use any of this code:
   organization={IEEE}
 }
 ```
+
+## Speed Optimization
+
+An optimized version of LeGO-LOAM can be found [here](https://github.com/facontidavide/LeGO-LOAM/tree/speed_optimization). All credits go to @facontidavide. Improvements in this directory include but not limited to:
+
+    + To improve the quality of the code, making it more readable, consistent and easier to understand and modify.
+    + To remove hard-coded values and use proper configuration files to describe the hardware.
+    + To improve performance, in terms of amount of CPU used to calculate the same result.
+    + To convert a multi-process application into a single-process / multi-threading one; this makes the algorithm more deterministic and slightly faster.
+    + To make it easier and faster to work with rosbags: processing a rosbag should be done at maximum speed allowed by the CPU and in a deterministic way.
+    + As a consequence of the previous point, creating unit and regression tests will be easier.
