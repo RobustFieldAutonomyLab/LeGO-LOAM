@@ -53,7 +53,7 @@ Lidar odometry performs two-step Levenberg Marquardt optimization to get 6D tran
     <img src="/LeGO-LOAM/launch/odometry.jpg" alt="drawing" width="400"/>
 </p>
 
-## New sensor
+## New Lidar
 
 The key thing to adapt the code to a new sensor is making sure the point cloud can be properly projected to an range image and ground can be correctly detected. For example, VLP-16 has a angular resolution of 0.2&deg; and 2&deg; along two directions. It has 16 beams. The angle of the bottom beam is -15&deg;. Thus, the parameters in "utility.h" are listed as below. When you implement new sensor, make sure that the ground_cloud has enough points for matching. Before you post any issues, please read this.
 
@@ -77,7 +77,7 @@ extern const float ang_bottom = 30.666666;
 extern const int groundScanInd = 20;
 ```
 
-One important thing to keep in mind is that our current implementation for range image projection is only suitable for sensors that have evenly distributed channels. If you want to use our algorithm with Velodyne VLP-32c or HDL-64e, you need to write your own implementation for such projection. If the point cloud is not projected properly, you will lose many points and performance.
+One important thing to keep in mind is that our current implementation for range image projection is only suitable for sensors that have evenly distributed channels. For **KITTI** users, if you want to use our algorithm with Velodyne VLP-32c or **HDL-64e**, you need to write your own implementation for such projection. If the point cloud is not projected properly, you will lose many points and performance.
 
 If you are using your lidar with an IMU, make sure your IMU is aligned properly with the lidar. The algorithm uses IMU data to correct the point cloud distortion that is cause by sensor motion. If the IMU is not aligned properly, the usage of IMU data will deteriorate the result. Ouster lidar IMU is not supported in the package.
 
