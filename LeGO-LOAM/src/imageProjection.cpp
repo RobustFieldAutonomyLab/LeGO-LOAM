@@ -68,7 +68,7 @@ private:
     cloud_msgs::cloud_info segMsg; // info of segmented cloud
     std_msgs::Header cloudHeader;
 
-    std::vector<std::pair<uint8_t, uint8_t> > neighborIterator; // neighbor iterator for segmentaiton process
+    std::vector<std::pair<int8_t, int8_t> > neighborIterator; // neighbor iterator for segmentaiton process
 
     uint16_t *allPushedIndX; // array for tracking points of a segmented object
     uint16_t *allPushedIndY;
