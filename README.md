@@ -108,7 +108,7 @@ This dataset, [Stevens data-set](https://github.com/TixiaoShan/Stevens-VLP16-Dat
 
 ## Cite *LeGO-LOAM*
 
-Thank you for citing our *LeGO-LOAM* paper if you use any of this code: 
+Thank you for citing [our *LeGO-LOAM* paper](./Shan_Englot_IROS_2018_Preprint.pdf) if you use any of this code: 
 ```
 @inproceedings{legoloam2018,
   title={LeGO-LOAM: Lightweight and Ground-Optimized Lidar Odometry and Mapping on Variable Terrain},
