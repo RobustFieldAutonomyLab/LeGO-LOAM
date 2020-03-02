@@ -10,7 +10,7 @@ This repository contains code for a lightweight and ground optimized lidar odome
 
 ## Dependency
 
-- [ROS](http://wiki.ros.org/ROS/Installation) (tested with indigo and kinetic)
+- [ROS](http://wiki.ros.org/ROS/Installation) (tested with indigo, kinetic, and melodic)
 - [gtsam](https://github.com/borglab/gtsam/releases) (Georgia Tech Smoothing and Mapping library, 4.0.0-alpha2)
   ```
   wget -O ~/Downloads/gtsam.zip https://github.com/borglab/gtsam/archive/4.0.0-alpha2.zip
