@@ -1,17 +1,16 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 78
+    Help Height: 171
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
       Splitter Ratio: 0.703999996
-    Tree Height: 800
+    Tree Height: 707
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
-    Expanded:
-      - /Publish Point1
+    Expanded: ~
     Name: Tool Properties
     Splitter Ratio: 0.588679016
   - Class: rviz/Views
@@ -46,12 +45,12 @@ Visualization Manager:
       Update Interval: 0
       Value: false
     - Class: rviz/Axes
-      Enabled: false
+      Enabled: true
       Length: 2
       Name: map
       Radius: 0.300000012
       Reference Frame: map
-      Value: false
+      Value: true
     - Class: rviz/Axes
       Enabled: true
       Length: 1
@@ -344,7 +343,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 177
+      Max Intensity: 42
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Trajectory
@@ -422,8 +421,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 21.166317
-        Min Value: -3.08604336
+        Max Value: 23.0833607
+        Min Value: -3.98265076
         Value: true
       Axis: Y
       Channel Name: intensity
@@ -431,7 +430,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 15
@@ -445,6 +444,36 @@ Visualization Manager:
       Size (m): 0.00999999978
       Style: Points
       Topic: /laser_cloud_surround
+      Unreliable: false
+      Use Fixed Frame: false
+      Use rainbow: false
+      Value: false
+    - Alpha: 0.5
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 52.9331703
+        Min Value: -7.77158022
+        Value: true
+      Axis: Y
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 300
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 15
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: Map Cloud (stack)
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 2
+      Size (m): 0.00999999978
+      Style: Points
+      Topic: /registered_cloud
       Unreliable: false
       Use Fixed Frame: false
       Use rainbow: false
@@ -484,21 +513,18 @@ Visualization Manager:
     Background Color: 0; 0; 0
     Default Light: true
     Fixed Frame: map
-    Frame Rate: 60
+    Frame Rate: 30
   Name: root
   Tools:
     - Class: rviz/Interact
       Hide Inactive Objects: true
     - Class: rviz/FocusCamera
-    - Class: rviz/PublishPoint
-      Single click: true
-      Topic: /clicked_point
     - Class: rviz/Measure
   Value: true
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 78.774765
+      Distance: 86.4874191
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -513,10 +539,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.73479706
+      Pitch: 0.829797029
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 2.60052443
+      Yaw: 0.395514786
     Saved: ~
 Window Geometry:
   Displays:

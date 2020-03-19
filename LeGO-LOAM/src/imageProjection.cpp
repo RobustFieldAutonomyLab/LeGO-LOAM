@@ -25,9 +25,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+//
+// This is an implementation of the algorithm described in the following papers:
+//   J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time.
+//     Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
+//   T. Shan and B. Englot. LeGO-LOAM: Lightweight and Ground-Optimized Lidar Odometry and Mapping on Variable Terrain
+//      IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). October 2018.
 
 #include "utility.h"
-
 
 class ImageProjection{
 private:
@@ -46,6 +51,7 @@ private:
     ros::Publisher pubOutlierCloud;
 
     pcl::PointCloud<PointType>::Ptr laserCloudIn;
+    pcl::PointCloud<PointXYZIR>::Ptr laserCloudInRing;
 
     pcl::PointCloud<PointType>::Ptr fullCloud; // projected velodyne raw cloud, but saved in the form of 1-D matrix
     pcl::PointCloud<PointType>::Ptr fullInfoCloud; // same as fullCloud, but with intensity - range
@@ -73,7 +79,7 @@ private:
     uint16_t *allPushedIndX; // array for tracking points of a segmented object
     uint16_t *allPushedIndY;
 
-    uint16_t *queueIndX; // array for breadth-first search process of segmentation
+    uint16_t *queueIndX; // array for breadth-first search process of segmentation, for speed
     uint16_t *queueIndY;
 
 public:
@@ -103,6 +109,7 @@ public:
     void allocateMemory(){
 
         laserCloudIn.reset(new pcl::PointCloud<PointType>());
+        laserCloudInRing.reset(new pcl::PointCloud<PointXYZIR>());
 
         fullCloud.reset(new pcl::PointCloud<PointType>());
         fullInfoCloud.reset(new pcl::PointCloud<PointType>());
@@ -161,6 +168,14 @@ public:
         // Remove Nan points
         std::vector<int> indices;
         pcl::removeNaNFromPointCloud(*laserCloudIn, *laserCloudIn, indices);
+        // have "ring" channel in the cloud
+        if (useCloudRing == true){
+            pcl::fromROSMsg(*laserCloudMsg, *laserCloudInRing);
+            if (laserCloudInRing->is_dense == false) {
+                ROS_ERROR("Point cloud is not in dense format, please remove NaN points first!");
+                ros::shutdown();
+            }  
+        }
     }
     
     void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
@@ -207,8 +222,13 @@ public:
             thisPoint.y = laserCloudIn->points[i].y;
             thisPoint.z = laserCloudIn->points[i].z;
             // find the row and column index in the iamge for this point
-            verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
-            rowIdn = (verticalAngle + ang_bottom) / ang_res_y;
+            if (useCloudRing == true){
+                rowIdn = laserCloudInRing->points[i].ring;
+            }
+            else{
+                verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
+                rowIdn = (verticalAngle + ang_bottom) / ang_res_y;
+            }
             if (rowIdn < 0 || rowIdn >= N_SCAN)
                 continue;
 
@@ -222,7 +242,7 @@ public:
                 continue;
 
             range = sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y + thisPoint.z * thisPoint.z);
-            if (range < 0.1)
+            if (range < sensorMinimumRange)
                 continue;
             
             rangeMat.at<float>(rowIdn, columnIdn) = range;

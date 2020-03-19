@@ -79,9 +79,9 @@ private:
     bool systemInited;
 
     std::vector<smoothness_t> cloudSmoothness;
-    float cloudCurvature[N_SCAN*Horizon_SCAN];
-    int cloudNeighborPicked[N_SCAN*Horizon_SCAN];
-    int cloudLabel[N_SCAN*Horizon_SCAN];
+    float *cloudCurvature;
+    int *cloudNeighborPicked;
+    int *cloudLabel;
 
     int imuPointerFront;
     int imuPointerLast;
@@ -142,14 +142,14 @@ private:
     int laserCloudCornerLastNum;
     int laserCloudSurfLastNum;
 
-    int pointSelCornerInd[N_SCAN*Horizon_SCAN];
-    float pointSearchCornerInd1[N_SCAN*Horizon_SCAN];
-    float pointSearchCornerInd2[N_SCAN*Horizon_SCAN];
+    int *pointSelCornerInd;
+    float *pointSearchCornerInd1;
+    float *pointSearchCornerInd2;
 
-    int pointSelSurfInd[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd1[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd2[N_SCAN*Horizon_SCAN];
-    float pointSearchSurfInd3[N_SCAN*Horizon_SCAN];
+    int *pointSelSurfInd;
+    float *pointSearchSurfInd1;
+    float *pointSearchSurfInd2;
+    float *pointSearchSurfInd3;
 
     float transformCur[6];
     float transformSum[6];
@@ -207,6 +207,19 @@ public:
 
     void initializationValue()
     {
+        cloudCurvature = new float[N_SCAN*Horizon_SCAN];
+        cloudNeighborPicked = new int[N_SCAN*Horizon_SCAN];
+        cloudLabel = new int[N_SCAN*Horizon_SCAN];
+
+        pointSelCornerInd = new int[N_SCAN*Horizon_SCAN];
+        pointSearchCornerInd1 = new float[N_SCAN*Horizon_SCAN];
+        pointSearchCornerInd2 = new float[N_SCAN*Horizon_SCAN];
+
+        pointSelSurfInd = new int[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd1 = new float[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd2 = new float[N_SCAN*Horizon_SCAN];
+        pointSearchSurfInd3 = new float[N_SCAN*Horizon_SCAN];
+
         cloudSmoothness.resize(N_SCAN*Horizon_SCAN);
 
         downSizeFilter.setLeafSize(0.2, 0.2, 0.2);

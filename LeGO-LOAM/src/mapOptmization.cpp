@@ -69,6 +69,7 @@ private:
     ros::Publisher pubHistoryKeyFrames;
     ros::Publisher pubIcpKeyFrames;
     ros::Publisher pubRecentKeyFrames;
+    ros::Publisher pubRegisteredCloud;
 
     ros::Subscriber subLaserCloudCornerLast;
     ros::Subscriber subLaserCloudSurfLast;
@@ -243,6 +244,7 @@ public:
         pubHistoryKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("/history_cloud", 2);
         pubIcpKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("/corrected_cloud", 2);
         pubRecentKeyFrames = nh.advertise<sensor_msgs::PointCloud2>("/recent_cloud", 2);
+        pubRegisteredCloud = nh.advertise<sensor_msgs::PointCloud2>("/registered_cloud", 2);
 
         downSizeFilterCorner.setLeafSize(0.2, 0.2, 0.2);
         downSizeFilterSurf.setLeafSize(0.4, 0.4, 0.4);
@@ -676,6 +678,17 @@ public:
         tfBroadcaster.sendTransform(aftMappedTrans);
     }
 
+    PointTypePose trans2PointTypePose(float transformIn[]){
+        PointTypePose thisPose6D;
+        thisPose6D.x = transformIn[3];
+        thisPose6D.y = transformIn[4];
+        thisPose6D.z = transformIn[5];
+        thisPose6D.roll  = transformIn[0];
+        thisPose6D.pitch = transformIn[1];
+        thisPose6D.yaw   = transformIn[2];
+        return thisPose6D;
+    }
+
     void publishKeyPosesAndFrames(){
 
         if (pubKeyPoses.getNumSubscribers() != 0){
@@ -693,6 +706,19 @@ public:
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubRecentKeyFrames.publish(cloudMsgTemp);
         }
+
+        if (pubRegisteredCloud.getNumSubscribers() != 0){
+            pcl::PointCloud<PointType>::Ptr cloudOut(new pcl::PointCloud<PointType>());
+            PointTypePose thisPose6D = trans2PointTypePose(transformTobeMapped);
+            *cloudOut += *transformPointCloud(laserCloudCornerLastDS,  &thisPose6D);
+            *cloudOut += *transformPointCloud(laserCloudSurfTotalLast, &thisPose6D);
+            
+            sensor_msgs::PointCloud2 cloudMsgTemp;
+            pcl::toROSMsg(*cloudOut, cloudMsgTemp);
+            cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
+            cloudMsgTemp.header.frame_id = "/camera_init";
+            pubRegisteredCloud.publish(cloudMsgTemp);
+        } 
     }
 
     void visualizeGlobalMapThread(){
