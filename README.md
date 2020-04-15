@@ -122,6 +122,10 @@ Thank you for citing [our *LeGO-LOAM* paper](./Shan_Englot_IROS_2018_Preprint.pd
 }
 ```
 
+## Loop Closure
+
+The loop-closure method implemented in this package is a naive ICP-based method. It often fails when the odometry drift is too large. For more advanced loop-closure methods, there is a package called [SC-LeGO-LOAM](https://github.com/irapkaist/SC-LeGO-LOAM), which features utilizing point cloud descriptor.
+
 ## Speed Optimization
 
 An optimized version of LeGO-LOAM can be found [here](https://github.com/facontidavide/LeGO-LOAM/tree/speed_optimization). All credits go to @facontidavide. Improvements in this directory include but not limited to:
