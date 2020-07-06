@@ -350,9 +350,9 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 1
       Selectable: true
-      Size (Pixels): 3
+      Size (Pixels): 8
       Size (m): 0.300000012
-      Style: Flat Squares
+      Style: Points
       Topic: /key_pose_origin
       Unreliable: false
       Use Fixed Frame: true
