@@ -564,11 +564,18 @@ public:
 
         // 2. Publish clouds
         sensor_msgs::PointCloud2 laserCloudTemp;
-		// pubOutlierCloud发布界外点云
+		// pubOutlierCloud 发布界外点云
         pcl::toROSMsg(*outlierCloud, laserCloudTemp);
         laserCloudTemp.header.stamp = cloudHeader.stamp;
         laserCloudTemp.header.frame_id = "base_link";
         pubOutlierCloud.publish(laserCloudTemp);
+        // test  保存点云为pcd  
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::fromROSMsg(laserCloudTemp, cloud);   //关键的一句数据的转换
+        pcl::PCDWriter writer;
+        writer.write<pcl::PointXYZ>("/home/lwc/catkin_ws/write_pcd_test.pcd", cloud);
+        // test  保存点云为pcd
+
         // segmented cloud with ground
 		// pubSegmentedCloud 发布分块的地面点云
         pcl::toROSMsg(*segmentedCloud, laserCloudTemp);
