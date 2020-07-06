@@ -8,6 +8,9 @@
         "list": "cpp",
         "system_error": "cpp",
         "vector": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "queue": "cpp",
+        "xhash": "cpp",
+        "xutility": "cpp"
     }
 }
