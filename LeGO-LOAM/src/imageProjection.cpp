@@ -145,7 +145,7 @@ public:
         queueIndY = new uint16_t[N_SCAN*Horizon_SCAN];
     }
 
-	// 初始化/重置各类参数内容
+	// 7. 初始化or重置各类参数内容
     void resetParameters(){
         laserCloudIn->clear();
         groundCloud->clear();
@@ -164,8 +164,26 @@ public:
 
     ~ImageProjection(){}
 
+    void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
+
+        // 1. 将ROS中的sensor_msgs::PointCloud2ConstPtr类型转换到pcl点云库指针
+        copyPointCloud(laserCloudMsg);
+        // 2. Start and end angle of a scan 计算一次扫描开始和结束的角度
+        findStartEndAngle();
+        // 3. Range image projection 点云投影
+        projectPointCloud();
+        // 4. Mark ground points 标记地面点
+        groundRemoval();
+        // 5. Point cloud segmentation 点云分割
+        cloudSegmentation();
+        // 6. Publish all clouds 发布点云
+        publishCloud();
+        // 7. Reset parameters for next iteration 为下次迭代重置参数
+        resetParameters();
+    }
+
+    // 1. 将ROS中的sensor_msgs::PointCloud2ConstPtr类型转换到pcl点云库指针
     void copyPointCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
-        // 将ROS中的sensor_msgs::PointCloud2ConstPtr类型转换到pcl点云库指针
         cloudHeader = laserCloudMsg->header;
         // cloudHeader.stamp = ros::Time::now(); // Ouster lidar users may need to uncomment this line
         pcl::fromROSMsg(*laserCloudMsg, *laserCloudIn);
@@ -182,24 +200,7 @@ public:
         }
     }
     
-    void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
-
-        // 1. Convert ros message to pcl point cloud
-        copyPointCloud(laserCloudMsg);
-        // 2. Start and end angle of a scan
-        findStartEndAngle();
-        // 3. Range image projection
-        projectPointCloud();
-        // 4. Mark ground points
-        groundRemoval();
-        // 5. Point cloud segmentation
-        cloudSegmentation();
-        // 6. Publish all clouds
-        publishCloud();
-        // 7. Reset parameters for next iteration
-        resetParameters();
-    }
-
+    // 2. Start and end angle of a scan 计算一次扫描开始和结束的角度
     void findStartEndAngle(){
         // start and end orientation of this cloud
         // 雷达坐标系：右->X,前->Y,上->Z
@@ -221,6 +222,7 @@ public:
         segMsg.orientationDiff = segMsg.endOrientation - segMsg.startOrientation;
     }
 
+    // 3. Range image projection 点云投影
     void projectPointCloud(){
         // range image projection
         float verticalAngle, horizonAngle, range;
@@ -300,7 +302,7 @@ public:
         }
     }
 
-
+    // 去除地面点
     void groundRemoval(){
         size_t lowerInd, upperInd;
         float diffX, diffY, diffZ, angle;
@@ -364,7 +366,7 @@ public:
             }
         }
     }
-
+    // 4. 点云分割
     void cloudSegmentation(){
         // segmentation process
         for (size_t i = 0; i < N_SCAN; ++i)
@@ -439,6 +441,7 @@ public:
         }
     }
 
+    // 标记组成部分？
     void labelComponents(int row, int col){
         // use std::queue std::vector std::deque will slow the program down greatly
         float d1, d2, alpha, angle;
@@ -552,22 +555,22 @@ public:
     }
 
     
-    // 发布各类点云内容
+    // 6. Publish all clouds 发布点云
     void publishCloud(){
         // 1. Publish Seg Cloud Info
     	// 发布cloud_msgs::cloud_info消息
         segMsg.header = cloudHeader;
         pubSegmentedCloudInfo.publish(segMsg);
+
         // 2. Publish clouds
         sensor_msgs::PointCloud2 laserCloudTemp;
-
 		// pubOutlierCloud发布界外点云
         pcl::toROSMsg(*outlierCloud, laserCloudTemp);
         laserCloudTemp.header.stamp = cloudHeader.stamp;
         laserCloudTemp.header.frame_id = "base_link";
         pubOutlierCloud.publish(laserCloudTemp);
         // segmented cloud with ground
-		// pubSegmentedCloud发布分块点云
+		// pubSegmentedCloud 发布分块的地面点云
         pcl::toROSMsg(*segmentedCloud, laserCloudTemp);
         laserCloudTemp.header.stamp = cloudHeader.stamp;
         laserCloudTemp.header.frame_id = "base_link";
@@ -579,21 +582,21 @@ public:
             laserCloudTemp.header.frame_id = "base_link";
             pubFullCloud.publish(laserCloudTemp);
         }
-        // original dense ground cloud
+        // original dense ground cloud 原始稠密地面点云
         if (pubGroundCloud.getNumSubscribers() != 0){
             pcl::toROSMsg(*groundCloud, laserCloudTemp);
             laserCloudTemp.header.stamp = cloudHeader.stamp;
             laserCloudTemp.header.frame_id = "base_link";
             pubGroundCloud.publish(laserCloudTemp);
         }
-        // segmented cloud without ground
+        // segmented cloud without ground 分割后的非地面点云
         if (pubSegmentedCloudPure.getNumSubscribers() != 0){
             pcl::toROSMsg(*segmentedCloudPure, laserCloudTemp);
             laserCloudTemp.header.stamp = cloudHeader.stamp;
             laserCloudTemp.header.frame_id = "base_link";
             pubSegmentedCloudPure.publish(laserCloudTemp);
         }
-        // projected full cloud info
+        // projected full cloud info 
         if (pubFullInfoCloud.getNumSubscribers() != 0){
             pcl::toROSMsg(*fullInfoCloud, laserCloudTemp);
             laserCloudTemp.header.stamp = cloudHeader.stamp;
