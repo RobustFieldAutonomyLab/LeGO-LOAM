@@ -569,10 +569,10 @@ public:
         laserCloudTemp.header.frame_id = "base_link";
         pubOutlierCloud.publish(laserCloudTemp);
         // 保存点云为pcd  
-        // pcl::PointCloud<pcl::PointXYZ> cloud;
-        // pcl::fromROSMsg(laserCloudTemp, cloud);   //关键的一句数据的转换
-        // pcl::PCDWriter writer;
-        // writer.write<pcl::PointXYZ>("/home/lwc/catkin_ws/" + laserCloudTemp.header.stamp + "write_pcd_test.pcd", cloud);
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::fromROSMsg(laserCloudTemp, cloud);   //关键的一句数据的转换
+        pcl::PCDWriter writer;
+        writer.write<pcl::PointXYZ>("/home/lwc/catkin_ws/" + laserCloudTemp.header.stamp + "write_pcd_test.pcd", cloud);
         // 保存点云为pcd
 
         // segmented cloud with ground
