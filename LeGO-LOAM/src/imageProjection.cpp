@@ -88,6 +88,7 @@ public:
         // 订阅来自velodyne雷达驱动的topic ("/velodyne_points")
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>(pointCloudTopic, 1, &ImageProjection::cloudHandler, this);
 
+        // 发布当前帧处理后的点云
         pubFullCloud = nh.advertise<sensor_msgs::PointCloud2> ("/full_cloud_projected", 1);
         pubFullInfoCloud = nh.advertise<sensor_msgs::PointCloud2> ("/full_cloud_info", 1);
 
