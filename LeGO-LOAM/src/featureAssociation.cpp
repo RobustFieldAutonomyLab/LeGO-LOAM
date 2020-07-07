@@ -327,7 +327,6 @@ public:
         sinImuYawStart = sin(imuYawStart);
     }
 
-
     void ShiftToStartIMU(float pointTime)
     {
         // 下面三个量表示的是世界坐标系下，从start到cur的坐标的漂移
@@ -506,6 +505,7 @@ public:
         }
     }
 
+    // 4. IMU处理
     void imuHandler(const sensor_msgs::Imu::ConstPtr& imuIn)
     {
         double roll, pitch, yaw;
@@ -537,6 +537,7 @@ public:
         AccumulateIMUShiftAndRotation();
     }
 
+    // 1. 点云处理
     void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
 
         cloudHeader = laserCloudMsg->header;
@@ -550,6 +551,7 @@ public:
         newSegmentedCloud = true;
     }
 
+    // 3. 离散点云处理
     void outlierCloudHandler(const sensor_msgs::PointCloud2ConstPtr& msgIn){
 
         timeNewOutlierCloud = msgIn->header.stamp.toSec();
@@ -560,6 +562,7 @@ public:
         newOutlierCloud = true;
     }
 
+    // 2. 点云信息处理
     void laserCloudInfoHandler(const cloud_msgs::cloud_infoConstPtr& msgIn)
     {
         timeNewSegmentedCloudInfo = msgIn->header.stamp.toSec();
@@ -952,47 +955,6 @@ public:
 	        pubSurfPointsLessFlat.publish(laserCloudOutMsg);
 	    }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     void TransformToStart(PointType const * const pi, PointType * const po)
     {
@@ -1951,6 +1913,7 @@ public:
         }
     }
 
+    // 0 
     void runFeatureAssociation()
     {
 
@@ -1996,9 +1959,6 @@ public:
         publishCloudsLast(); // cloud to mapOptimization
     }
 };
-
-
-
 
 int main(int argc, char** argv)
 {
