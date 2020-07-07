@@ -64,10 +64,12 @@ private:
 public:
 
     TransformFusion(){
-
-        pubLaserOdometry2 = nh.advertise<nav_msgs::Odometry> ("/integrated_to_init", 5);
+        // 订阅
         subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 5, &TransformFusion::laserOdometryHandler, this);
         subOdomAftMapped = nh.subscribe<nav_msgs::Odometry>("/aft_mapped_to_init", 5, &TransformFusion::odomAftMappedHandler, this);
+        // 发布
+        pubLaserOdometry2 = nh.advertise<nav_msgs::Odometry> ("/integrated_to_init", 5);
+
 
         laserOdometry2.header.frame_id = "/camera_init";
         laserOdometry2.child_frame_id = "/camera";

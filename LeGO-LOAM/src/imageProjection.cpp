@@ -164,7 +164,7 @@ public:
     }
 
     ~ImageProjection(){}
-
+    
     void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
 
         // 1. 将ROS中的sensor_msgs::PointCloud2ConstPtr类型转换到pcl点云库指针
@@ -173,7 +173,7 @@ public:
         findStartEndAngle();
         // 3. Range image projection 点云投影
         projectPointCloud();
-        // 4. Mark ground points 标记地面点
+        // 4. Mark ground points 标记地面点，去除
         groundRemoval();
         // 5. Point cloud segmentation 点云分割
         cloudSegmentation();
@@ -303,7 +303,7 @@ public:
         }
     }
 
-    // 去除地面点
+    // 4. Mark ground points 标记地面点，去除
     void groundRemoval(){
         size_t lowerInd, upperInd;
         float diffX, diffY, diffZ, angle;
@@ -367,7 +367,8 @@ public:
             }
         }
     }
-    // 4. 点云分割
+
+    // 5. Point cloud segmentation 点云分割
     void cloudSegmentation(){
         // segmentation process
         for (size_t i = 0; i < N_SCAN; ++i)
@@ -442,7 +443,7 @@ public:
         }
     }
 
-    // 标记组成部分？
+    // 5.1 标记组成部分？
     void labelComponents(int row, int col){
         // use std::queue std::vector std::deque will slow the program down greatly
         float d1, d2, alpha, angle;
@@ -554,28 +555,25 @@ public:
             }
         }
     }
-
     
     // 6. Publish all clouds 发布点云
     void publishCloud(){
-        // 1. Publish Seg Cloud Info
-    	// 发布cloud_msgs::cloud_info消息
+        // Publish Seg Cloud Info 发布cloud_msgs::cloud_info消息
         segMsg.header = cloudHeader;
         pubSegmentedCloudInfo.publish(segMsg);
 
-        // 2. Publish clouds
         sensor_msgs::PointCloud2 laserCloudTemp;
 		// pubOutlierCloud 发布界外点云
         pcl::toROSMsg(*outlierCloud, laserCloudTemp);
         laserCloudTemp.header.stamp = cloudHeader.stamp;
         laserCloudTemp.header.frame_id = "base_link";
         pubOutlierCloud.publish(laserCloudTemp);
-        // test  保存点云为pcd  
-        pcl::PointCloud<pcl::PointXYZ> cloud;
-        pcl::fromROSMsg(laserCloudTemp, cloud);   //关键的一句数据的转换
-        pcl::PCDWriter writer;
-        writer.write<pcl::PointXYZ>("/home/lwc/catkin_ws/write_pcd_test.pcd", cloud);
-        // test  保存点云为pcd
+        // 保存点云为pcd  
+        // pcl::PointCloud<pcl::PointXYZ> cloud;
+        // pcl::fromROSMsg(laserCloudTemp, cloud);   //关键的一句数据的转换
+        // pcl::PCDWriter writer;
+        // writer.write<pcl::PointXYZ>("/home/lwc/catkin_ws/" + laserCloudTemp.header.stamp + "write_pcd_test.pcd", cloud);
+        // 保存点云为pcd
 
         // segmented cloud with ground
 		// pubSegmentedCloud 发布分块的地面点云
@@ -612,10 +610,8 @@ public:
             pubFullInfoCloud.publish(laserCloudTemp);
         }
     }
+
 };
-
-
-
 
 int main(int argc, char** argv){
 
