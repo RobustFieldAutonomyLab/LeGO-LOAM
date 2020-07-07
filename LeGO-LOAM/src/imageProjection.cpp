@@ -571,8 +571,7 @@ public:
         
         // 保存点云为pcd
         pcl::PCDWriter writer;
-        // to_string(cloudHeader.stamp.toSec())
-        writer.writeASCII(strPcdSaveDir + to_string(cloudHeader.stamp.toSec()) + "write_pcd_test.pcd", *outlierCloud);
+        writer.writeASCII(fileDirectory  + "/" + to_string(cloudHeader.stamp.toSec()) + ".pcd", *outlierCloud);
         // 保存点云为pcd
 
         // segmented cloud with ground
