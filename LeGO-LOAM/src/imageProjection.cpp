@@ -570,9 +570,13 @@ public:
         pubOutlierCloud.publish(laserCloudTemp);
         
         // 保存点云为pcd
-        pcl::PCDWriter writer;
-        writer.writeASCII(fileDirectory  + "/" + to_string(cloudHeader.stamp.toSec()) + ".pcd", *outlierCloud);
+        //pcl::PCDWriter writer;
+        //writer.writeASCII(fileDirectory  + "/" + to_string(cloudHeader.stamp.toSec()) + ".pcd", *outlierCloud);
         // 保存点云为pcd
+
+        // 输出通知
+        // cout<<  to_string(cloudHeader.stamp.toSec())  + "触发pubOutlierCloud"<<endl;
+        // 输出通知
 
         // segmented cloud with ground
 		// pubSegmentedCloud 发布分块的地面点云

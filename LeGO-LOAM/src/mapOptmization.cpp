@@ -840,6 +840,9 @@ public:
     }
 
     void loopClosureThread(){
+        // 输出通知
+        cout<<   "开启闭环线程loopClosureEnableFlag=" << boolalpha << loopClosureEnableFlag <<endl;
+        // 输出通知
 
         if (loopClosureEnableFlag == false)
             return;
@@ -912,6 +915,10 @@ public:
             // 要求closestHistoryFrameID + j在0到cloudKeyPoses3D->points.size()-1之间,不能超过索引
             *nearHistorySurfKeyFrameCloud += *transformPointCloud(cornerCloudKeyFrames[closestHistoryFrameID+j], &cloudKeyPoses6D->points[closestHistoryFrameID+j]);
             *nearHistorySurfKeyFrameCloud += *transformPointCloud(surfCloudKeyFrames[closestHistoryFrameID+j],   &cloudKeyPoses6D->points[closestHistoryFrameID+j]);
+
+            // 输出通知
+            cout<<   "检测到闭环"<<endl;
+             // 输出通知
         }
 
         // 下采样滤波减少数据量
@@ -924,6 +931,9 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubHistoryKeyFrames.publish(cloudMsgTemp);
+            // 输出通知
+            cout<<   "publish history near key frames"<<endl;
+             // 输出通知
         }
 
         return true;
@@ -944,6 +954,11 @@ public:
             if (potentialLoopFlag == false)
                 return;
         }
+
+        // 输出通知
+        cout<<   "开启闭环处理"<<endl;
+        // 输出通知
+
         // reset the flag first no matter icp successes or not
         potentialLoopFlag = false;
         // ICP Settings
@@ -967,6 +982,10 @@ public:
             return;
         // publish corrected cloud
         // 以下在点云icp收敛并且噪声量在一定范围内进行
+
+        // 输出通知
+        cout << "pubIcpKeyFrames.getNumSubscribers() =  " << pubIcpKeyFrames.getNumSubscribers() << endl;
+        // 输出通知
         if (pubIcpKeyFrames.getNumSubscribers() != 0){
             pcl::PointCloud<PointType>::Ptr closed_cloud(new pcl::PointCloud<PointType>());
 			// icp.getFinalTransformation()的返回值是Eigen::Matrix<Scalar, 4, 4>
@@ -976,6 +995,9 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubIcpKeyFrames.publish(cloudMsgTemp);
+            // 输出通知
+            cout << "发布了 pubIcpKeyFrames" << endl;
+            // 输出通知
         }   
         /*
         	get pose constraint
@@ -1007,6 +1029,9 @@ public:
         gtSAMgraph.resize(0);
 
         aLoopIsClosed = true;
+        // 输出通知
+        cout << "闭环结束" << endl;
+        // 输出通知
     }
 
     Pose3 pclPointTogtsamPose3(PointTypePose thisPoint){ // camera frame to lidar frame

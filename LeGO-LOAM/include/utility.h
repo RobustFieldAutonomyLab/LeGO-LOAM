@@ -102,7 +102,7 @@ extern const int groundScanInd = 7;
 // extern const float ang_bottom = 16.6+0.1;
 // extern const int groundScanInd = 15;
 
-extern const bool loopClosureEnableFlag = false;
+extern const bool loopClosureEnableFlag = true;
 extern const double mappingProcessInterval = 0.3;
 
 extern const float scanPeriod = 0.1;

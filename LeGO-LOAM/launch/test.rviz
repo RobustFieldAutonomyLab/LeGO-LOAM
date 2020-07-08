@@ -1,12 +1,14 @@
 Panels:
   - Class: rviz/Displays
-    Help Height: 171
+    Help Height: 74
     Name: Displays
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
-      Splitter Ratio: 0.7039999961853027
-    Tree Height: 323
+        - /corrected_cloud1
+        - /registered_cloud1
+      Splitter Ratio: 0.4775160551071167
+    Tree Height: 420
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -63,8 +65,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 17.005943298339844
-        Min Value: -1.0478858947753906
+        Max Value: 26.610275268554688
+        Min Value: 4.9289469718933105
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -78,7 +80,7 @@ Visualization Manager:
       Max Intensity: 183
       Min Color: 0; 0; 0
       Min Intensity: 1
-      Name: Velodyne
+      Name: full_cloud_projected
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: true
@@ -108,11 +110,11 @@ Visualization Manager:
       Max Intensity: 96
       Min Color: 0; 0; 0
       Min Intensity: 1
-      Name: Surface (yellow)
+      Name: laser_cloud_flat
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: true
-      Size (Pixels): 8
+      Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /laser_cloud_flat
@@ -120,6 +122,36 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 20.456600189208984
+        Min Value: -3.5830700397491455
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 170; 255
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 96
+      Min Color: 0; 0; 0
+      Min Intensity: 1
+      Name: laser_cloud_flat_less
+      Position Transformer: XYZ
+      Queue Size: 2
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /laser_cloud_less_flat
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -138,11 +170,11 @@ Visualization Manager:
       Max Intensity: 96
       Min Color: 0; 0; 0
       Min Intensity: 1
-      Name: Edge Sharp (blue)
+      Name: laser_cloud_sharp
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: true
-      Size (Pixels): 8
+      Size (Pixels): 5
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /laser_cloud_sharp
@@ -168,7 +200,7 @@ Visualization Manager:
       Max Intensity: 96
       Min Color: 0; 0; 0
       Min Intensity: 1
-      Name: Edge Features (green)
+      Name: laser_cloud_sharp_less
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: true
@@ -176,36 +208,6 @@ Visualization Manager:
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /laser_cloud_less_sharp
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 20.456600189208984
-        Min Value: -3.5830700397491455
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 170; 255
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: false
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 96
-      Min Color: 0; 0; 0
-      Min Intensity: 1
-      Name: Surface Features (pink)
-      Position Transformer: XYZ
-      Queue Size: 2
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /laser_cloud_less_flat
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -228,7 +230,7 @@ Visualization Manager:
       Max Intensity: 15.160499572753906
       Min Color: 0; 0; 0
       Min Intensity: 8.003499984741211
-      Name: Outlier Cloud
+      Name: outlier_cloud
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: true
@@ -255,10 +257,10 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 15.178799629211426
+      Max Intensity: 15.178500175476074
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Segmentation Full
+      Name: segmented_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -285,10 +287,10 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 241
+      Max Intensity: 201
       Min Color: 0; 0; 0
       Min Intensity: 1
-      Name: Segmentation Pure
+      Name: segmented_cloud_pure
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -303,22 +305,22 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 18.959199905395508
-        Min Value: 0.04049830138683319
+        Max Value: 39.52130126953125
+        Min Value: 3.1648731231689453
         Value: true
-      Axis: Z
+      Axis: X
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 193; 125; 17
+      Color: 46; 52; 54
       Color Transformer: FlatColor
       Decay Time: 0
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 15
+      Max Intensity: 7.179900169372559
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Ground Cloud
+      Name: ground_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -333,26 +335,26 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 4.570899963378906
-        Min Value: 0.30000001192092896
+        Max Value: 3.295097589492798
+        Min Value: 0.00028854282572865486
         Value: true
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color Transformer: FlatColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 127
+      Max Intensity: 403
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Trajectory
+      Name: key_pose_origin
       Position Transformer: XYZ
       Queue Size: 1
       Selectable: true
-      Size (Pixels): 8
+      Size (Pixels): 3
       Size (m): 0.30000001192092896
       Style: Points
       Topic: /key_pose_origin
@@ -360,36 +362,36 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
-    - Alpha: 1
+    - Alpha: 0.30000001192092896
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
         Min Value: -10
         Value: true
-      Axis: Z
+      Axis: Y
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: false
+      Color: 239; 41; 41
+      Color Transformer: FlatColor
+      Decay Time: 5000
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 15
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: ICP cloud
+      Name: corrected_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 5
+      Size (Pixels): 2
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /corrected_cloud
       Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: false
+      Use Fixed Frame: false
+      Use rainbow: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -408,7 +410,7 @@ Visualization Manager:
       Max Intensity: 15
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: History Key Frames
+      Name: history_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -438,7 +440,7 @@ Visualization Manager:
       Max Intensity: 15
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Map Cloud
+      Name: laser_cloud_surround
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -461,14 +463,14 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 186; 189; 182
       Color Transformer: FlatColor
-      Decay Time: 300
-      Enabled: false
+      Decay Time: 5000
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 15
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Map Cloud (stack)
+      Name: registered_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -479,12 +481,12 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: false
       Use rainbow: false
-      Value: false
+      Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 23.258052825927734
-        Min Value: -3.5361998081207275
+        Max Value: 23.141860961914062
+        Min Value: -4.238155364990234
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -498,7 +500,7 @@ Visualization Manager:
       Max Intensity: 15
       Min Color: 0; 0; 0
       Min Intensity: 0
-      Name: Surround Cloud
+      Name: recent_cloud
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
@@ -526,7 +528,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 22.347700119018555
+      Distance: 28.15192985534668
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -541,10 +543,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.46979546546936035
+      Pitch: 0.87979656457901
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 3.213711738586426
+      Yaw: 2.2055411338806152
     Saved: ~
 Window Geometry:
   Displays:
@@ -564,5 +566,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1386
-  X: 478
-  Y: 88
+  X: 502
+  Y: 83
