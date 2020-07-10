@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/vance/桌面/catkin_ws/src/LeGO-LOAM/LeGO-LOAM/**",
+                "/usr/include/**",
+                "/opt/ros/melodic/include/ros",
+                "/opt/ros/melodic/include/ros/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

@@ -766,7 +766,9 @@ public:
         }
         // save final point cloud
         pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
-
+        // 输出通知
+        cout<<"保存finalCloud"<<endl;
+        // 输出通知
         string cornerMapString = "/tmp/cornerMap.pcd";
         string surfaceMapString = "/tmp/surfaceMap.pcd";
         string trajectoryString = "/tmp/trajectory.pcd";
@@ -787,9 +789,14 @@ public:
         downSizeFilterSurf.setInputCloud(surfaceMapCloud);
         downSizeFilterSurf.filter(*surfaceMapCloudDS);
 
-        pcl::io::savePCDFileASCII(fileDirectory+"cornerMap.pcd", *cornerMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory+"surfaceMap.pcd", *surfaceMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory+"trajectory.pcd", *cloudKeyPoses3D);
+        pcl::io::savePCDFileASCII(fileDirectory + cornerMapString, *cornerMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory + surfaceMapString, *surfaceMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory + trajectoryString, *cloudKeyPoses3D);
+        // 输出通知
+        cout<<"保存cornerMap"<<endl;
+        cout<<"保存surfaceMap"<<endl;
+        cout<<"保存trajectory"<<endl;
+        // 输出通知
     }
 
     void publishGlobalMap(){
@@ -838,7 +845,7 @@ public:
 
     void loopClosureThread(){
         // 输出通知
-        cout<<   "开启闭环线程loopClosureEnableFlag=" << boolalpha << loopClosureEnableFlag <<endl;
+        cout<< "开启闭环线程loopClosureEnableFlag=" << boolalpha << loopClosureEnableFlag <<endl;
         // 输出通知
 
         if (loopClosureEnableFlag == false)
@@ -914,7 +921,7 @@ public:
             *nearHistorySurfKeyFrameCloud += *transformPointCloud(surfCloudKeyFrames[closestHistoryFrameID+j],   &cloudKeyPoses6D->points[closestHistoryFrameID+j]);
 
             // 输出通知
-            cout<<   "检测到闭环"<<endl;
+            // cout<<   "检测到闭环"<<endl;
              // 输出通知
         }
 
@@ -928,14 +935,10 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubHistoryKeyFrames.publish(cloudMsgTemp);
-            // 输出通知
-            cout<<   "publish history near key frames"<<endl;
-             // 输出通知
         }
 
         return true;
     }
-
 
     void performLoopClosure(){
 
@@ -980,9 +983,6 @@ public:
         // publish corrected cloud
         // 以下在点云icp收敛并且噪声量在一定范围内进行
 
-        // 输出通知
-        cout << "pubIcpKeyFrames.getNumSubscribers() =  " << pubIcpKeyFrames.getNumSubscribers() << endl;
-        // 输出通知
         if (pubIcpKeyFrames.getNumSubscribers() != 0){
             pcl::PointCloud<PointType>::Ptr closed_cloud(new pcl::PointCloud<PointType>());
 			// icp.getFinalTransformation()的返回值是Eigen::Matrix<Scalar, 4, 4>
@@ -992,9 +992,6 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubIcpKeyFrames.publish(cloudMsgTemp);
-            // 输出通知
-            cout << "发布了 pubIcpKeyFrames" << endl;
-            // 输出通知
         }   
         /*
         	get pose constraint
@@ -1028,6 +1025,7 @@ public:
         aLoopIsClosed = true;
         // 输出通知
         cout << "闭环结束" << endl;
+        cout << " " << endl;
         // 输出通知
     }
 
@@ -1563,7 +1561,6 @@ public:
             transformUpdate();
         }
     }
-
 
     void saveKeyFramesAndFactor(){
 

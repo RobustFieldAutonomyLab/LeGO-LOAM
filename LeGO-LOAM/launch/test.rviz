@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /TF1/Frames1
-        - /corrected_cloud1
         - /registered_cloud1
       Splitter Ratio: 0.4775160551071167
     Tree Height: 420
@@ -434,7 +433,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 15
@@ -451,7 +450,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: false
       Use rainbow: false
-      Value: false
+      Value: true
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -474,7 +473,7 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 2
+      Size (Pixels): 1
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /registered_cloud
@@ -567,4 +566,4 @@ Window Geometry:
     collapsed: true
   Width: 1386
   X: 502
-  Y: 83
+  Y: 53
