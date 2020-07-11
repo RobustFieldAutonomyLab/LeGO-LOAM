@@ -1,0 +1,17 @@
+~/catkin_ws$ 
+roscore
+
+~/catkin_ws$ 
+source ~/catkin_ws/devel/setup.bash
+roslaunch lego_loam run.launch
+
+
+~/catkin_ws$ 
+rosbag play ./zdataset/lego/0.bag --clock --topics /velodyne_points /imu/data
+
+rosbag play ./zdataset/lego/large_scale/0.bag ./zdataset/lego/large_scale/1.bag ./zdataset/lego/large_scale/2.bag ./zdataset/lego/large_scale/3.bag ./zdataset/lego/large_scale/4.bag ./zdataset/lego/large_scale/5.bag ./zdataset/lego/large_scale/6.bag ./zdataset/lego/large_scale/7.bag ./zdataset/lego/large_scale/8.bag ./zdataset/lego/large_scale/9.bag ./zdataset/lego/large_scale/10.bag ./zdataset/lego/large_scale/11.bag ./zdataset/lego/large_scale/12.bag ./zdataset/lego/large_scale/13.bag ./zdataset/lego/large_scale/14.bag ./zdataset/lego/large_scale/15.bag ./zdataset/lego/large_scale/16.bag ./zdataset/lego/large_scale/17.bag ./zdataset/lego/large_scale/18.bag ./zdataset/lego/large_scale/19.bag ./zdataset/lego/large_scale/20.bag ./zdataset/lego/large_scale/21.bag ./zdataset/lego/large_scale/22.bag ./zdataset/lego/large_scale/23.bag ./zdataset/lego/large_scale/24.bag ./zdataset/lego/large_scale/25.bag ./zdataset/lego/large_scale/26.bag ./zdataset/lego/large_scale/27.bag ./zdataset/lego/large_scale/28.bag ./zdataset/lego/large_scale/29.bag ./zdataset/lego/large_scale/30.bag ./zdataset/lego/large_scale/31.bag ./zdataset/lego/large_scale/32.bag ./zdataset/lego/large_scale/33.bag ./zdataset/lego/large_scale/34.bag ./zdataset/lego/large_scale/35.bag ./zdataset/lego/large_scale/36.bag ./zdataset/lego/large_scale/37.bag ./zdataset/lego/large_scale/38.bag ./zdataset/lego/large_scale/39.bag --clock --topics /velodyne_points /imu/data
+
+
+rosbag play ./zdataset/lego/lawn_loop_closure/0.bag ./zdataset/lego/lawn_loop_closure/1.bag ./zdataset/lego/lawn_loop_closure/2.bag ./zdataset/lego/lawn_loop_closure/3.bag --clock --topics /velodyne_points /imu/data
+
+rosrun rqt_graph rqt_graph

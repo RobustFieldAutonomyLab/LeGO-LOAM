@@ -766,9 +766,7 @@ public:
         }
         // save final point cloud
         pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
-        // 输出通知
-        cout<<"保存finalCloud"<<endl;
-        // 输出通知
+
         string cornerMapString = "/tmp/cornerMap.pcd";
         string surfaceMapString = "/tmp/surfaceMap.pcd";
         string trajectoryString = "/tmp/trajectory.pcd";
@@ -789,14 +787,9 @@ public:
         downSizeFilterSurf.setInputCloud(surfaceMapCloud);
         downSizeFilterSurf.filter(*surfaceMapCloudDS);
 
-        pcl::io::savePCDFileASCII(fileDirectory + cornerMapString, *cornerMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory + surfaceMapString, *surfaceMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory + trajectoryString, *cloudKeyPoses3D);
-        // 输出通知
-        cout<<"保存cornerMap"<<endl;
-        cout<<"保存surfaceMap"<<endl;
-        cout<<"保存trajectory"<<endl;
-        // 输出通知
+        pcl::io::savePCDFileASCII(fileDirectory+"cornerMap.pcd", *cornerMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory+"surfaceMap.pcd", *surfaceMapCloudDS);
+        pcl::io::savePCDFileASCII(fileDirectory+"trajectory.pcd", *cloudKeyPoses3D);
     }
 
     void publishGlobalMap(){
@@ -810,6 +803,8 @@ public:
         // 通过KDTree进行最近邻搜索
         std::vector<int> pointSearchIndGlobalMap;
         std::vector<float> pointSearchSqDisGlobalMap;
+	    // search near key frames to visualize
+        // 对globalMapKeyPoses进行下采样
         mtx.lock();
         kdtreeGlobalMap->setInputCloud(cloudKeyPoses3D);
         kdtreeGlobalMap->radiusSearch(currentRobotPosPoint, globalMapVisualizationSearchRadius, pointSearchIndGlobalMap, pointSearchSqDisGlobalMap, 0);
@@ -817,17 +812,18 @@ public:
 
         for (int i = 0; i < pointSearchIndGlobalMap.size(); ++i)
           globalMapKeyPoses->points.push_back(cloudKeyPoses3D->points[pointSearchIndGlobalMap[i]]);
-        // 对globalMapKeyPoses进行下采样
+	    // downsample near selected key frames
+        // 对globalMapKeyFrames进行下采样
         downSizeFilterGlobalMapKeyPoses.setInputCloud(globalMapKeyPoses);
         downSizeFilterGlobalMapKeyPoses.filter(*globalMapKeyPosesDS);
-	    // 导出下采样后的关键帧
+	    // extract visualized and downsampled key frames
         for (int i = 0; i < globalMapKeyPosesDS->points.size(); ++i){
 			int thisKeyInd = (int)globalMapKeyPosesDS->points[i].intensity;
 			*globalMapKeyFrames += *transformPointCloud(cornerCloudKeyFrames[thisKeyInd],   &cloudKeyPoses6D->points[thisKeyInd]);
 			*globalMapKeyFrames += *transformPointCloud(surfCloudKeyFrames[thisKeyInd],    &cloudKeyPoses6D->points[thisKeyInd]);
 			*globalMapKeyFrames += *transformPointCloud(outlierCloudKeyFrames[thisKeyInd], &cloudKeyPoses6D->points[thisKeyInd]);
         }
-        // 对globalMapKeyFrames进行下采样
+	    // downsample visualized points
         downSizeFilterGlobalMapKeyFrames.setInputCloud(globalMapKeyFrames);
         downSizeFilterGlobalMapKeyFrames.filter(*globalMapKeyFramesDS);
  
@@ -845,7 +841,7 @@ public:
 
     void loopClosureThread(){
         // 输出通知
-        cout<< "开启闭环线程loopClosureEnableFlag=" << boolalpha << loopClosureEnableFlag <<endl;
+        cout<<   "开启闭环线程loopClosureEnableFlag=" << boolalpha << loopClosureEnableFlag <<endl;
         // 输出通知
 
         if (loopClosureEnableFlag == false)
@@ -921,7 +917,7 @@ public:
             *nearHistorySurfKeyFrameCloud += *transformPointCloud(surfCloudKeyFrames[closestHistoryFrameID+j],   &cloudKeyPoses6D->points[closestHistoryFrameID+j]);
 
             // 输出通知
-            // cout<<   "检测到闭环"<<endl;
+            cout<<   "检测到闭环"<<endl;
              // 输出通知
         }
 
@@ -935,10 +931,14 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubHistoryKeyFrames.publish(cloudMsgTemp);
+            // 输出通知
+            cout<<   "publish history near key frames"<<endl;
+             // 输出通知
         }
 
         return true;
     }
+
 
     void performLoopClosure(){
 
@@ -983,6 +983,9 @@ public:
         // publish corrected cloud
         // 以下在点云icp收敛并且噪声量在一定范围内进行
 
+        // 输出通知
+        cout << "pubIcpKeyFrames.getNumSubscribers() =  " << pubIcpKeyFrames.getNumSubscribers() << endl;
+        // 输出通知
         if (pubIcpKeyFrames.getNumSubscribers() != 0){
             pcl::PointCloud<PointType>::Ptr closed_cloud(new pcl::PointCloud<PointType>());
 			// icp.getFinalTransformation()的返回值是Eigen::Matrix<Scalar, 4, 4>
@@ -992,6 +995,9 @@ public:
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubIcpKeyFrames.publish(cloudMsgTemp);
+            // 输出通知
+            cout << "发布了 pubIcpKeyFrames" << endl;
+            // 输出通知
         }   
         /*
         	get pose constraint
@@ -1025,7 +1031,6 @@ public:
         aLoopIsClosed = true;
         // 输出通知
         cout << "闭环结束" << endl;
-        cout << " " << endl;
         // 输出通知
     }
 
@@ -1561,6 +1566,7 @@ public:
             transformUpdate();
         }
     }
+
 
     void saveKeyFramesAndFactor(){
 

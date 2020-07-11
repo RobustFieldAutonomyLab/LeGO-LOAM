@@ -15,5 +15,45 @@
     <node pkg="lego_loam" type="featureAssociation" name="featureAssociation" output="screen"/>
     <node pkg="lego_loam" type="mapOptmization"     name="mapOptmization"     output="screen"/>
     <node pkg="lego_loam" type="transformFusion"    name="transformFusion"    output="screen"/>
+    <node pkg="lidar_apollo_instance_segmentation" type="lidar_apollo_instance_segmentation_node"
+        name="lidar_apollo_instance_segmentation" output="screen" >
+        <remap from="~input/pointcloud" to="/sensing/lidar/top/rectified/pointcloud"/>
+        <remap from="~output/labeled_clusters" to="labeled_clusters"/>    
+        <rosparam if="$(eval model=='model_16')" subst_value="true">
+            engine_file: $(arg trained_engine_file)
+            prototxt_file: $(arg trained_prototxt_file)
+            caffemodel_file: $(arg trained_caffemodel_file)
+            score_threshold: 0.1
+            range: 70
+            width: 672
+            height: 672
+            use_intensity_feature: true
+            use_constant_feature: false
+        </rosparam>
+
+        <rosparam if="$(eval model=='model_64')" subst_value="true">
+            engine_file: $(arg trained_engine_file)
+            prototxt_file: $(arg trained_prototxt_file)
+            caffemodel_file: $(arg trained_caffemodel_file)
+            score_threshold: 0.1
+            range: 70
+            width: 672
+            height: 672
+            use_intensity_feature: true
+            use_constant_feature: false
+        </rosparam>
+
+        <rosparam if="$(eval model=='model_128')" subst_value="true">
+            engine_file: $(arg trained_engine_file)
+            prototxt_file: $(arg trained_prototxt_file)
+            caffemodel_file: $(arg trained_caffemodel_file)
+            score_threshold: 0.1
+            range: 90
+            width: 864
+            height: 864
+            use_intensity_feature: false
+            use_constant_feature: false
+        </rosparam>
+    </node>
 
 </launch>
