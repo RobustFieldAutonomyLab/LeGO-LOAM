@@ -16,8 +16,8 @@
   <run_depend>roscpp</run_depend>
   <build_depend>rospy</build_depend>
   <run_depend>rospy</run_depend>
-  <build_depend>ros_bridge</build_depend>
-  <run_depend>ros_bridge</run_depend>
+  <build_depend>rosbridge_suite</build_depend>
+  <run_depend>rosbridge_suite</run_depend>
   
   <build_depend>tf</build_depend>
   <run_depend>tf</run_depend>
@@ -34,8 +34,8 @@
   <run_depend>std_msgs</run_depend>
   <build_depend>cloud_msgs</build_depend>
   <run_depend>cloud_msgs</run_depend>
-  <build_depend>sensors_msgs</build_depend>
-  <run_depend>sensors_msgs</run_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <run_depend>sensor_msgs</run_depend>
   <build_depend>geometry_msgs</build_depend>
   <run_depend>geometry_msgs</run_depend>
   <build_depend>nav_msgs</build_depend>
@@ -44,7 +44,7 @@
   <build_depend>image_transport</build_depend>
   <run_depend>image_transport</run_depend>
   
-  <build_depend>gtsam</build_depend>
-  <run_depend>gtsam</run_depend>
+  <!--<build_depend>gtsam</build_depend>
+  <run_depend>gtsam</run_depend>-->
 
 </package>
