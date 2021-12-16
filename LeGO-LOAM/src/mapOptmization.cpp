@@ -65,6 +65,7 @@ private:
     ros::Publisher pubLaserCloudSurround;
     ros::Publisher pubOdomAftMapped;
     ros::Publisher pubKeyPoses;
+    ros::Publisher pubPoses;
 
     ros::Publisher pubHistoryKeyFrames;
     ros::Publisher pubIcpKeyFrames;
@@ -232,6 +233,7 @@ public:
     	isam = new ISAM2(parameters);
 
         pubKeyPoses = nh.advertise<sensor_msgs::PointCloud2>("/key_pose_origin", 2);
+        pubPoses = nh.advertise<geometry_msgs::PoseStamped>("/pose_origin", 2);
         pubLaserCloudSurround = nh.advertise<sensor_msgs::PointCloud2>("/laser_cloud_surround", 2);
         pubOdomAftMapped = nh.advertise<nav_msgs::Odometry> ("/aft_mapped_to_init", 5);
 
@@ -698,6 +700,32 @@ public:
             cloudMsgTemp.header.frame_id = "/camera_init";
             pubKeyPoses.publish(cloudMsgTemp);
         }
+
+        if (pubPoses.getNumSubscribers() != 0){
+            // sensor_msgs::PointCloud2 cloudMsgTemp;
+            geometry_msgs::PoseStamped poseMsg;
+            // cloudKeyPoses6D->points[i].x = cloudKeyPoses3D->points[i].x;
+            // cloudKeyPoses6D->points[i].y = cloudKeyPoses3D->points[i].y;
+            // cloudKeyPoses6D->points[i].z = cloudKeyPoses3D->points[i].z;
+            // cloudKeyPoses6D->points[i].roll  = isamCurrentEstimate.at<Pose3>(i).rotation().pitch();
+            // cloudKeyPoses6D->points[i].pitch = isamCurrentEstimate.at<Pose3>(i).rotation().yaw();
+            // cloudKeyPoses6D->points[i].yaw   = isamCurrentEstimate.at<Pose3>(i).rotation().roll();            
+
+            // pcl::toROSMsg(*cloudKeyPoses3D, poseMsg);
+            poseMsg.header.stamp = ros::Time().fromSec(timeLaserOdometry);
+            poseMsg.header.frame_id = "/camera_init";
+            int numPoses = cloudKeyPoses6D->points.size();
+            geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
+                  (cloudKeyPoses6D->points[numPoses-1].roll, cloudKeyPoses6D->points[numPoses-1].pitch, cloudKeyPoses6D->points[numPoses-1].yaw);
+            poseMsg.pose.position.x = cloudKeyPoses6D->points[numPoses-1].x;
+            poseMsg.pose.position.y = cloudKeyPoses6D->points[numPoses-1].y;
+            poseMsg.pose.position.z = cloudKeyPoses6D->points[numPoses-1].z;
+            poseMsg.pose.orientation.x = geoQuat.x;
+            poseMsg.pose.orientation.y = geoQuat.y;
+            poseMsg.pose.orientation.z = geoQuat.z;
+            poseMsg.pose.orientation.w = geoQuat.w;
+            pubPoses.publish(poseMsg);
+        }        
 
         if (pubRecentKeyFrames.getNumSubscribers() != 0){
             sensor_msgs::PointCloud2 cloudMsgTemp;
