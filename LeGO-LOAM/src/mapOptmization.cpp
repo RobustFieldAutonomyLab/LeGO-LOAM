@@ -715,15 +715,19 @@ public:
             poseMsg.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             poseMsg.header.frame_id = "/camera_init";
             int numPoses = cloudKeyPoses6D->points.size();
-            geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
-                  (cloudKeyPoses6D->points[numPoses-1].roll, cloudKeyPoses6D->points[numPoses-1].pitch, cloudKeyPoses6D->points[numPoses-1].yaw);
+            // geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
+            //       (cloudKeyPoses6D->points[numPoses-1].roll, cloudKeyPoses6D->points[numPoses-1].pitch, cloudKeyPoses6D->points[numPoses-1].yaw);
+            //transform from camera_init_to_map
+            tf::Quaternion R_camera_init_to_map = tf::createQuaternionFromRPY(M_PI_2, 0, M_PI_2);
+            tf::Quaternion R_camera_to_map = tf::createQuaternionFromRPY(cloudKeyPoses6D->points[numPoses-1].roll, cloudKeyPoses6D->points[numPoses-1].pitch, cloudKeyPoses6D->points[numPoses-1].yaw);
+            tf::Quaternion R_camera_to_camera_init = R_camera_to_map * R_camera_init_to_map.inverse();
             poseMsg.pose.position.x = cloudKeyPoses6D->points[numPoses-1].x;
             poseMsg.pose.position.y = cloudKeyPoses6D->points[numPoses-1].y;
             poseMsg.pose.position.z = cloudKeyPoses6D->points[numPoses-1].z;
-            poseMsg.pose.orientation.x = geoQuat.x;
-            poseMsg.pose.orientation.y = geoQuat.y;
-            poseMsg.pose.orientation.z = geoQuat.z;
-            poseMsg.pose.orientation.w = geoQuat.w;
+            poseMsg.pose.orientation.x = R_camera_to_camera_init.x();
+            poseMsg.pose.orientation.y = R_camera_to_camera_init.y();
+            poseMsg.pose.orientation.z = R_camera_to_camera_init.z();
+            poseMsg.pose.orientation.w = R_camera_to_camera_init.w();
             pubPoses.publish(poseMsg);
         }        
 

@@ -8,6 +8,7 @@ Panels:
         - /Image1
         - /MarkerArray1
         - /PointCloud21
+        - /Pose1
       Splitter Ratio: 0.7039999961853027
     Tree Height: 491
   - Class: rviz/Selection
@@ -430,8 +431,8 @@ Visualization Manager:
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 7.097813129425049
-        Min Value: -0.338409423828125
+        Max Value: 7.712604522705078
+        Min Value: -1.401808738708496
         Value: true
       Axis: Y
       Channel Name: intensity
@@ -531,6 +532,21 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Alpha: 1
+      Axes Length: 2
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Axes
+      Topic: /pose_origin
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -562,10 +578,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7447971105575562
+      Pitch: 0.7997974157333374
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 6.108700752258301
+      Yaw: 0.6055150628089905
     Saved: ~
 Window Geometry:
   Displays:
