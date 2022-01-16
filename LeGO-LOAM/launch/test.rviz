@@ -9,6 +9,7 @@ Panels:
         - /MarkerArray1
         - /PointCloud21
         - /Pose1
+        - /Odometry1
       Splitter Ratio: 0.7039999961853027
     Tree Height: 491
   - Class: rviz/Selection
@@ -431,8 +432,8 @@ Visualization Manager:
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 7.712604522705078
-        Min Value: -1.401808738708496
+        Max Value: 8.323742866516113
+        Min Value: -1.0918875932693481
         Value: true
       Axis: Y
       Channel Name: intensity
@@ -545,6 +546,40 @@ Visualization Manager:
       Shaft Radius: 0.05000000074505806
       Shape: Axes
       Topic: /pose_origin
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.10000000149011612
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: Odometry
+      Position Tolerance: 0.10000000149011612
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /integrated_to_init
       Unreliable: false
       Value: true
   Enabled: true

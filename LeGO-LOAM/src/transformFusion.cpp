@@ -198,12 +198,18 @@ public:
 
         geoQuat = tf::createQuaternionMsgFromRollPitchYaw
                   (transformMapped[2], -transformMapped[0], -transformMapped[1]);
-
+        // Modified (Kanke)
+        tf::Quaternion R_camera_init_to_map = tf::createQuaternionFromRPY(M_PI_2, 0, M_PI_2);
+        tf::Quaternion R_camera_to_camera_init = tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w)* R_camera_init_to_map.inverse();
         laserOdometry2.header.stamp = laserOdometry->header.stamp;
-        laserOdometry2.pose.pose.orientation.x = -geoQuat.y;
-        laserOdometry2.pose.pose.orientation.y = -geoQuat.z;
-        laserOdometry2.pose.pose.orientation.z = geoQuat.x;
-        laserOdometry2.pose.pose.orientation.w = geoQuat.w;
+        laserOdometry2.pose.pose.orientation.x = R_camera_to_camera_init.x();
+        laserOdometry2.pose.pose.orientation.y = R_camera_to_camera_init.y();
+        laserOdometry2.pose.pose.orientation.z = R_camera_to_camera_init.z();
+        laserOdometry2.pose.pose.orientation.w = R_camera_to_camera_init.w();
+        // laserOdometry2.pose.pose.orientation.x = -geoQuat.y;
+        // laserOdometry2.pose.pose.orientation.y = -geoQuat.z;
+        // laserOdometry2.pose.pose.orientation.z = geoQuat.x;
+        // laserOdometry2.pose.pose.orientation.w = geoQuat.w;        
         laserOdometry2.pose.pose.position.x = transformMapped[3];
         laserOdometry2.pose.pose.position.y = transformMapped[4];
         laserOdometry2.pose.pose.position.z = transformMapped[5];
