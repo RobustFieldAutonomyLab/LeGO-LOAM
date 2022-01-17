@@ -432,8 +432,8 @@ Visualization Manager:
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 8.323742866516113
-        Min Value: -1.0918875932693481
+        Max Value: 8.774646759033203
+        Min Value: -1.6972569227218628
         Value: true
       Axis: Y
       Channel Name: intensity
@@ -502,7 +502,7 @@ Visualization Manager:
       Marker Topic: /bbox3d_marker_array
       Name: MarkerArray
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -566,7 +566,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 100
+      Keep: 1000
       Name: Odometry
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -578,7 +578,7 @@ Visualization Manager:
         Head Radius: 0.10000000149011612
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
-        Value: Arrow
+        Value: Axes
       Topic: /integrated_to_init
       Unreliable: false
       Value: true

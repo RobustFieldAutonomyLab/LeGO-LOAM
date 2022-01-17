@@ -69,7 +69,8 @@ public:
         subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("/laser_odom_to_init", 5, &TransformFusion::laserOdometryHandler, this);
         subOdomAftMapped = nh.subscribe<nav_msgs::Odometry>("/aft_mapped_to_init", 5, &TransformFusion::odomAftMappedHandler, this);
 
-        laserOdometry2.header.frame_id = "/camera_init";
+        // laserOdometry2.header.frame_id = "/camera_init";
+        laserOdometry2.header.frame_id = "map";
         laserOdometry2.child_frame_id = "/camera";
 
         laserOdometryTrans2.frame_id_ = "/camera_init";
@@ -196,23 +197,37 @@ public:
 
         transformAssociateToMap();
 
+        // geometry_msgs::Quaternion geoQuat1 = geoQuat;
         geoQuat = tf::createQuaternionMsgFromRollPitchYaw
                   (transformMapped[2], -transformMapped[0], -transformMapped[1]);
         // Modified (Kanke)
         tf::Quaternion R_camera_init_to_map = tf::createQuaternionFromRPY(M_PI_2, 0, M_PI_2);
         tf::Quaternion R_camera_to_camera_init = tf::Quaternion(-geoQuat.y, -geoQuat.z, geoQuat.x, geoQuat.w)* R_camera_init_to_map.inverse();
+        tf::Quaternion R_camera_to_map = R_camera_init_to_map * R_camera_to_camera_init;
+
         laserOdometry2.header.stamp = laserOdometry->header.stamp;
-        laserOdometry2.pose.pose.orientation.x = R_camera_to_camera_init.x();
-        laserOdometry2.pose.pose.orientation.y = R_camera_to_camera_init.y();
-        laserOdometry2.pose.pose.orientation.z = R_camera_to_camera_init.z();
-        laserOdometry2.pose.pose.orientation.w = R_camera_to_camera_init.w();
-        // laserOdometry2.pose.pose.orientation.x = -geoQuat.y;
-        // laserOdometry2.pose.pose.orientation.y = -geoQuat.z;
-        // laserOdometry2.pose.pose.orientation.z = geoQuat.x;
-        // laserOdometry2.pose.pose.orientation.w = geoQuat.w;        
-        laserOdometry2.pose.pose.position.x = transformMapped[3];
-        laserOdometry2.pose.pose.position.y = transformMapped[4];
-        laserOdometry2.pose.pose.position.z = transformMapped[5];
+        // laserOdometry2.pose.pose.orientation.x = R_camera_to_camera_init.x();
+        // laserOdometry2.pose.pose.orientation.y = R_camera_to_camera_init.y();
+        // laserOdometry2.pose.pose.orientation.z = R_camera_to_camera_init.z();
+        // laserOdometry2.pose.pose.orientation.w = R_camera_to_camera_init.w();
+        // Map case
+        laserOdometry2.pose.pose.orientation.x = R_camera_to_map.x();
+        laserOdometry2.pose.pose.orientation.y = R_camera_to_map.y();
+        laserOdometry2.pose.pose.orientation.z = R_camera_to_map.z();
+        laserOdometry2.pose.pose.orientation.w = R_camera_to_map.w();                
+        
+        tf::Transform trans;
+        trans.setOrigin(tf::Vector3( 0, 0, 0));
+        trans.setRotation(R_camera_init_to_map);
+        tf::Vector3 pos_in_map = trans * tf::Vector3( transformMapped[3], transformMapped[4], transformMapped[5]);
+
+        // laserOdometry2.pose.pose.position.x = transformMapped[3];
+        // laserOdometry2.pose.pose.position.y = transformMapped[4];
+        // laserOdometry2.pose.pose.position.z = transformMapped[5];
+        // Map case
+        laserOdometry2.pose.pose.position.x = pos_in_map[0];
+        laserOdometry2.pose.pose.position.y = pos_in_map[1];
+        laserOdometry2.pose.pose.position.z = pos_in_map[2];        
         pubLaserOdometry2.publish(laserOdometry2);
 
         laserOdometryTrans2.stamp_ = laserOdometry->header.stamp;
