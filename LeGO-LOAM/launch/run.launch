@@ -16,4 +16,7 @@
     <node pkg="lego_loam" type="mapOptmization"     name="mapOptmization"     output="screen"/>
     <node pkg="lego_loam" type="transformFusion"    name="transformFusion"    output="screen"/>
 
+    <!-- Launch a map from the maps folder-->
+    <arg name="map" default="$(find racecar)/maps/backyard.yaml"/>
+    <node pkg="map_server" name="map_server" type="map_server" args="$(arg map)"/> 
 </launch>
