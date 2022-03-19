@@ -1455,6 +1455,7 @@ public:
 
     void correctPoses(){
     	if (aLoopIsClosed == true){
+            std::cout<<"find loop and pgo\n" ;
             recentCornerCloudKeyFrames. clear();
             recentSurfCloudKeyFrames.   clear();
             recentOutlierCloudKeyFrames.clear();
