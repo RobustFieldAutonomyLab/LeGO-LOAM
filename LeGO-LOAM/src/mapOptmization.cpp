@@ -218,13 +218,15 @@ private:
 
     float cRoll, sRoll, cPitch, sPitch, cYaw, sYaw, tX, tY, tZ;
     float ctRoll, stRoll, ctPitch, stPitch, ctYaw, stYaw, tInX, tInY, tInZ;
+    std::ofstream out_keyposes_; 
 
 public:
 
     
 
     mapOptimization():
-        nh("~")
+        nh("~"), 
+        out_keyposes_("/home/snow/polyWorkSpace/compare_ws/src/LeGO-LOAM-1/resultsOutput/keyposes.txt")
     {
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
@@ -809,6 +811,21 @@ public:
             rate.sleep();
             performLoopClosure();
         }
+        //add output paths
+        if(out_keyposes_.is_open()) {
+            for(size_t i = 0; i < cloudKeyPoses6D->points.size(); i++){
+                PointXYZIRPYT p_tmp = cloudKeyPoses6D->points[i]; 
+                gtsam::Rot3 rot_temp = gtsam::Rot3::RzRyRx(p_tmp.yaw, p_tmp.pitch, p_tmp.roll); 
+                out_keyposes_   << std::fixed << p_tmp.time - 32584.392 << " " 
+                                << p_tmp.x << " " << p_tmp.y << " " << p_tmp.z << " " 
+                                << rot_temp.toQuaternion().x() << " " 
+                                << rot_temp.toQuaternion().y() << " " 
+                                << rot_temp.toQuaternion().z() << " " 
+                                << rot_temp.toQuaternion().w() << "\n";
+
+            }
+        }
+        out_keyposes_.close();
     }
 
     bool detectLoopClosure(){
