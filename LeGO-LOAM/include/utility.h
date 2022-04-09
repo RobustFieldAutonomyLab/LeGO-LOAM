@@ -50,7 +50,7 @@ using namespace std;
 
 typedef pcl::PointXYZI  PointType;
 
-extern const string pointCloudTopic = "points_raw";///intensity_SLAM: points_raw
+extern const string pointCloudTopic = "/points_raw";///intensity_SLAM: points_raw
 extern const string imuTopic = "/imu/data";
 
 // Save pcd

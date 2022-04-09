@@ -218,15 +218,14 @@ private:
 
     float cRoll, sRoll, cPitch, sPitch, cYaw, sYaw, tX, tY, tZ;
     float ctRoll, stRoll, ctPitch, stPitch, ctYaw, stYaw, tInX, tInY, tInZ;
-    std::ofstream out_keyposes_; 
+    
 
 public:
 
     
 
     mapOptimization():
-        nh("~"),
-        out_keyposes_("/home/snow/polyWorkSpace/compare_ws/src/LeGO-LOAM-1/resultsOutput/Lego-LOAM.txt")        
+        nh("~")            
     {
     	ISAM2Params parameters;
 		parameters.relinearizeThreshold = 0.01;
@@ -1443,19 +1442,19 @@ public:
         //output paths
         
         
-        if(out_keyposes_.is_open()) {
-            // std::cout << "start recording poses\n" ; 
-            // for(size_t i = 0; i < cloudKeyPoses6D->points.size(); i++){
-                PointXYZIRPYT p_tmp = thisPose6D;
-                gtsam::Rot3 rot_temp = gtsam::Rot3::RzRyRx(p_tmp.yaw, p_tmp.pitch, p_tmp.roll); 
-                out_keyposes_   << std::fixed << p_tmp.time -32584.392 + 7289.3 << " "  // - 32584.392 for indoor, +7289.3 for handheld_part2
-                                << p_tmp.x << " " << p_tmp.y << " " << p_tmp.z << " " 
-                                << rot_temp.toQuaternion().x() << " " 
-                                << rot_temp.toQuaternion().y() << " " 
-                                << rot_temp.toQuaternion().z() << " " 
-                                << rot_temp.toQuaternion().w() << "\n";
-            // }
-        }
+        // if(out_keyposes_.is_open()) {
+        //     // std::cout << "start recording poses\n" ; 
+        //     // for(size_t i = 0; i < cloudKeyPoses6D->points.size(); i++){
+        //         PointXYZIRPYT p_tmp = thisPose6D;
+        //         gtsam::Rot3 rot_temp = gtsam::Rot3::RzRyRx(p_tmp.yaw, p_tmp.pitch, p_tmp.roll); 
+        //         out_keyposes_   << std::fixed << p_tmp.time -32584.392 + 7289.3 << " "  // - 32584.392 for indoor, +7289.3 for handheld_part2
+        //                         << p_tmp.x << " " << p_tmp.y << " " << p_tmp.z << " " 
+        //                         << rot_temp.toQuaternion().x() << " " 
+        //                         << rot_temp.toQuaternion().y() << " " 
+        //                         << rot_temp.toQuaternion().z() << " " 
+        //                         << rot_temp.toQuaternion().w() << "\n";
+        //     // }
+        // }
         // out_keyposes_.close();
         /**
          * save updated transform
@@ -1510,6 +1509,19 @@ public:
 
             aLoopIsClosed = false;
         }
+        double time_offset = 0.0; 
+        ros::param::get("time_offset", time_offset); 
+        std::ofstream out_keyposes_; 
+        out_keyposes_.open("/home/snow/polyWorkSpace/compare_ws/src/LeGO-LOAM-1/resultsOutput/Lego-LOAM.txt"); 
+        if(out_keyposes_.is_open()){ // file is ready  
+            for(size_t i = 0; i < cloudKeyPoses6D->points.size(); i++){
+                PointXYZIRPYT p_tmp = cloudKeyPoses6D->points[i];
+                gtsam::Rot3 rot_temp = gtsam::Rot3::RzRyRx(p_tmp.yaw, p_tmp.pitch, p_tmp.roll);
+                out_keyposes_ << std::fixed << p_tmp.time + time_offset << " " << p_tmp.x << " " << p_tmp.y  << " " << p_tmp.z  << " " << rot_temp.toQuaternion().x()  << " " << rot_temp.toQuaternion().y()  << " " << rot_temp.toQuaternion().z() << " " << rot_temp.toQuaternion().w() << "\n"; 
+            }
+
+        }
+        out_keyposes_.close();
     }
 
     void clearCloud(){
@@ -1578,6 +1590,8 @@ int main(int argc, char** argv)
 
         rate.sleep();
     }
+    //end of the loop 
+    
 
     loopthread.join();
     visualizeMapThread.join();

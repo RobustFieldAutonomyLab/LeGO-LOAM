@@ -163,6 +163,8 @@ public:
     void copyPointCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg){
 
         cloudHeader = laserCloudMsg->header;
+        double time_offset = laserCloudMsg->header.stamp.toSec() - ros::Time::now().toSec(); 
+        ros::param::set("time_offset", time_offset);
         cloudHeader.stamp = ros::Time::now(); // Ouster lidar users may need to uncomment this line
         pcl::fromROSMsg(*laserCloudMsg, *laserCloudIn);
         // Remove Nan points
