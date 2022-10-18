@@ -258,11 +258,11 @@ public:
         downSizeFilterGlobalMapKeyPoses.setLeafSize(1.0, 1.0, 1.0); // for global map visualization
         downSizeFilterGlobalMapKeyFrames.setLeafSize(0.4, 0.4, 0.4); // for global map visualization
 
-        odomAftMapped.header.frame_id = "/camera_init";
-        odomAftMapped.child_frame_id = "/aft_mapped";
+        odomAftMapped.header.frame_id = "camera_init";
+        odomAftMapped.child_frame_id = "aft_mapped";
 
-        aftMappedTrans.frame_id_ = "/camera_init";
-        aftMappedTrans.child_frame_id_ = "/aft_mapped";
+        aftMappedTrans.frame_id_ = "camera_init";
+        aftMappedTrans.child_frame_id_ = "aft_mapped";
 
         allocateMemory();
     }
@@ -697,7 +697,7 @@ public:
             sensor_msgs::PointCloud2 cloudMsgTemp;
             pcl::toROSMsg(*cloudKeyPoses3D, cloudMsgTemp);
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-            cloudMsgTemp.header.frame_id = "/camera_init";
+            cloudMsgTemp.header.frame_id = "camera_init";
             pubKeyPoses.publish(cloudMsgTemp);
         }
 
@@ -714,7 +714,7 @@ public:
             // pcl::toROSMsg(*cloudKeyPoses3D, poseMsg);
             poseMsg.header.stamp = ros::Time().fromSec(timeLaserOdometry);
             // poseMsg.header.frame_id = "/camera_init";
-            poseMsg.header.frame_id = "/map";
+            poseMsg.header.frame_id = "map";
             int numPoses = cloudKeyPoses6D->points.size();
             // geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw
             //       (cloudKeyPoses6D->points[numPoses-1].roll, cloudKeyPoses6D->points[numPoses-1].pitch, cloudKeyPoses6D->points[numPoses-1].yaw);
@@ -754,7 +754,7 @@ public:
             sensor_msgs::PointCloud2 cloudMsgTemp;
             pcl::toROSMsg(*laserCloudSurfFromMapDS, cloudMsgTemp);
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-            cloudMsgTemp.header.frame_id = "/camera_init";
+            cloudMsgTemp.header.frame_id = "camera_init";
             pubRecentKeyFrames.publish(cloudMsgTemp);
         }
 
@@ -767,7 +767,7 @@ public:
             sensor_msgs::PointCloud2 cloudMsgTemp;
             pcl::toROSMsg(*cloudOut, cloudMsgTemp);
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-            cloudMsgTemp.header.frame_id = "/camera_init";
+            cloudMsgTemp.header.frame_id = "camera_init";
             pubRegisteredCloud.publish(cloudMsgTemp);
         } 
     }
@@ -778,6 +778,46 @@ public:
             rate.sleep();
             publishGlobalMap();
         }
+        //生成优化后的TUM位姿///
+        ofstream foutTUM;
+        foutTUM.open("/home/wky/myRosWorkspace/lego-loam-WS/src/1.txt");
+        foutTUM << fixed;
+        for(size_t i = 0;i < cloudKeyPoses3D->size();i++)
+        {
+            // float cy = cos((cloudKeyPoses6D->points[i].yaw)*0.5);
+            // float sy = sin((cloudKeyPoses6D->points[i].yaw)*0.5);
+            // float cr = cos((cloudKeyPoses6D->points[i].roll)*0.5);
+            // float sr = sin((cloudKeyPoses6D->points[i].roll)*0.5);
+            // float cp = cos((cloudKeyPoses6D->points[i].pitch)*0.5);
+            // float sp = sin((cloudKeyPoses6D->points[i].pitch)*0.5);
+
+            // float w = cy * cp * cr + sy * sp * sr;
+            // float x = cy * cp * sr - sy * sp * cr;
+            // float y = sy * cp * sr + cy * sp * cr;
+            // float z = sy * cp * cr - cy * sp * sr;
+            //save the traj
+            static Eigen::Affine3f transformCorrect = pcl::getTransformation(0, 0, 0, 3.14159265/2, 0, 3.14159265/2);
+            Eigen::Affine3f poseRaw = pcl::getTransformation(cloudKeyPoses6D->points[i].x, cloudKeyPoses6D->points[i].y, cloudKeyPoses6D->points[i].z, cloudKeyPoses6D->points[i].roll, cloudKeyPoses6D->points[i].pitch, cloudKeyPoses6D->points[i].yaw);
+            Eigen::Affine3f poseCorrected = transformCorrect*poseRaw;
+            float x, y, z, roll, pitch, yaw;
+            pcl::getTranslationAndEulerAngles (poseCorrected, x, y, z, roll, pitch, yaw);
+            float cy = cos(yaw*0.5);
+            float sy = sin(yaw*0.5);
+            float cr = cos(roll*0.5);
+            float sr = sin(roll*0.5);
+            float cp = cos(pitch*0.5);
+            float sp = sin(pitch*0.5);
+
+            float w1 = cy * cp * cr + sy * sp * sr;
+            float x1 = cy * cp * sr - sy * sp * cr;
+            float y1 = sy * cp * sr + cy * sp * cr;
+            float z1 = sy * cp * cr - cy * sp * sr;            
+            foutTUM << setprecision(6) << cloudKeyPoses6D->points[i].time << " " << setprecision(9) << x << " " << y << " " << z << " " << x1 << " " << y1 << " " << z1 << " " << w1 << endl;
+            // foutTUM << setprecision(6) << cloudKeyPoses6D->points[i].time << " " << setprecision(9) << cloudKeyPoses6D->points[i].x << " " << cloudKeyPoses6D->points[i].y << " " << cloudKeyPoses6D->points[i].z << " " << x << " " << y << " " << z << " " << w << endl;
+        }
+        foutTUM.close();
+        std::cout << "saved path!已保存" << std::endl;
+        
         // save final point cloud
         pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
 
@@ -841,7 +881,7 @@ public:
         sensor_msgs::PointCloud2 cloudMsgTemp;
         pcl::toROSMsg(*globalMapKeyFramesDS, cloudMsgTemp);
         cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-        cloudMsgTemp.header.frame_id = "/camera_init";
+        cloudMsgTemp.header.frame_id = "camera_init";
         pubLaserCloudSurround.publish(cloudMsgTemp);  
 
         globalMapKeyPoses->clear();
@@ -915,7 +955,7 @@ public:
             sensor_msgs::PointCloud2 cloudMsgTemp;
             pcl::toROSMsg(*nearHistorySurfKeyFrameCloudDS, cloudMsgTemp);
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-            cloudMsgTemp.header.frame_id = "/camera_init";
+            cloudMsgTemp.header.frame_id = "camera_init";
             pubHistoryKeyFrames.publish(cloudMsgTemp);
         }
 
@@ -961,7 +1001,7 @@ public:
             sensor_msgs::PointCloud2 cloudMsgTemp;
             pcl::toROSMsg(*closed_cloud, cloudMsgTemp);
             cloudMsgTemp.header.stamp = ros::Time().fromSec(timeLaserOdometry);
-            cloudMsgTemp.header.frame_id = "/camera_init";
+            cloudMsgTemp.header.frame_id = "camera_init";
             pubIcpKeyFrames.publish(cloudMsgTemp);
         }   
         /*
@@ -1572,7 +1612,6 @@ public:
         }
     }
 };
-
 
 int main(int argc, char** argv)
 {
