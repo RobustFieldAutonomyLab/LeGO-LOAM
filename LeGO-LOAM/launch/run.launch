@@ -1,7 +1,7 @@
 <launch>
     
     <!--- Sim Time -->
-    <param name="/use_sim_time" value="true" />
+    <param name="/use_sim_time" value="false" />
 
     <!--- Run Rviz-->
     <node pkg="rviz" type="rviz" name="rviz" args="-d $(find lego_loam)/launch/test.rviz" />
