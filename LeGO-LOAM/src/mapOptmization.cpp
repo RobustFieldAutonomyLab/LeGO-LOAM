@@ -727,6 +727,32 @@ public:
             rate.sleep();
             publishGlobalMap();
         }
+
+        std::cout << "start save final point cloud" << std::endl;
+        std::cout << "======================================================" << std::endl;
+
+        ofstream f;
+        f.open("/home/roxaneqian/kitti_lego_loam/src/kitti-lego-loam-master/LeGO-LOAM/LeGO-LOAM/getfromcode/traj/myRes.txt");
+        f << fixed;
+        //std::cout << "traj roll" << cloudKeyPoses6D->points[0].roll << std::endl;
+        for(size_t i = 0;i < cloudKeyPoses3D->size();i++)
+        {
+            float cy = cos((cloudKeyPoses6D->points[i].yaw)*0.5);
+            float sy = sin((cloudKeyPoses6D->points[i].yaw)*0.5);
+            float cr = cos((cloudKeyPoses6D->points[i].roll)*0.5);
+            float sr = sin((cloudKeyPoses6D->points[i].roll)*0.5);
+            float cp = cos((cloudKeyPoses6D->points[i].pitch)*0.5);
+            float sp = sin((cloudKeyPoses6D->points[i].pitch)*0.5);
+
+            float w = cy * cp * cr + sy * sp * sr;
+            float x = cy * cp * sr - sy * sp * cr;
+            float y = sy * cp * sr + cy * sp * cr;
+            float z = sy * cp * cr - cy * sp * sr;
+            //save the traj
+            f << setprecision(6) << cloudKeyPoses6D->points[i].time << " " << setprecision(9) << cloudKeyPoses6D->points[i].x << " " << cloudKeyPoses6D->points[i].y << " " << cloudKeyPoses6D->points[i].z << " " << x << " " << y << " " << z << " " << w << endl;
+        }
+
+        f.close();
         // save final point cloud
         pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
 
