@@ -722,38 +722,49 @@ public:
     }
 
     void visualizeGlobalMapThread(){
-        ros::Rate rate(0.2);
-        while (ros::ok()){
-            rate.sleep();
-            publishGlobalMap();
-        }
-        // save final point cloud
-        pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
+    	ROS_INFO("Before.............");
 
-        string cornerMapString = "/tmp/cornerMap.pcd";
-        string surfaceMapString = "/tmp/surfaceMap.pcd";
-        string trajectoryString = "/tmp/trajectory.pcd";
+    	ros::Rate rate(0.2);
+    	while (ros::ok()){
+	    	rate.sleep();
+            publishGlobalMap(); // 계속해서 맵을 퍼블리시
+		}
 
-        pcl::PointCloud<PointType>::Ptr cornerMapCloud(new pcl::PointCloud<PointType>());
-        pcl::PointCloud<PointType>::Ptr cornerMapCloudDS(new pcl::PointCloud<PointType>());
-        pcl::PointCloud<PointType>::Ptr surfaceMapCloud(new pcl::PointCloud<PointType>());
-        pcl::PointCloud<PointType>::Ptr surfaceMapCloudDS(new pcl::PointCloud<PointType>());
-        
-        for(int i = 0; i < cornerCloudKeyFrames.size(); i++) {
-            *cornerMapCloud  += *transformPointCloud(cornerCloudKeyFrames[i],   &cloudKeyPoses6D->points[i]);
-    	    *surfaceMapCloud += *transformPointCloud(surfCloudKeyFrames[i],     &cloudKeyPoses6D->points[i]);
-    	    *surfaceMapCloud += *transformPointCloud(outlierCloudKeyFrames[i],  &cloudKeyPoses6D->points[i]);
-        }
+    // 루프가 끝난 후 최종 맵 저장
+    	ROS_INFO("Saving final maps.............");
 
-        downSizeFilterCorner.setInputCloud(cornerMapCloud);
-        downSizeFilterCorner.filter(*cornerMapCloudDS);
-        downSizeFilterSurf.setInputCloud(surfaceMapCloud);
-        downSizeFilterSurf.filter(*surfaceMapCloudDS);
+    	string cornerMapString = "/tmp/cornerMap.pcd";
+    	string surfaceMapString = "/tmp/surfaceMap.pcd";
+    	string trajectoryString = "/tmp/trajectory.pcd";
 
-        pcl::io::savePCDFileASCII(fileDirectory+"cornerMap.pcd", *cornerMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory+"surfaceMap.pcd", *surfaceMapCloudDS);
-        pcl::io::savePCDFileASCII(fileDirectory+"trajectory.pcd", *cloudKeyPoses3D);
-    }
+    	pcl::PointCloud<PointType>::Ptr cornerMapCloud(new pcl::PointCloud<PointType>());
+    	pcl::PointCloud<PointType>::Ptr cornerMapCloudDS(new pcl::PointCloud<PointType>());
+    	pcl::PointCloud<PointType>::Ptr surfaceMapCloud(new pcl::PointCloud<PointType>());
+    	pcl::PointCloud<PointType>::Ptr surfaceMapCloudDS(new pcl::PointCloud<PointType>());
+
+    	ROS_INFO("Before for loop.............");
+
+    	for(int i = 0; i < cornerCloudKeyFrames.size(); i++) {
+        	*cornerMapCloud  += *transformPointCloud(cornerCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
+        	*surfaceMapCloud += *transformPointCloud(surfCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
+        	*surfaceMapCloud += *transformPointCloud(outlierCloudKeyFrames[i], &cloudKeyPoses6D->points[i]);
+		}
+
+    	downSizeFilterCorner.setInputCloud(cornerMapCloud);
+    	downSizeFilterCorner.filter(*cornerMapCloudDS);
+    	downSizeFilterSurf.setInputCloud(surfaceMapCloud);
+    	downSizeFilterSurf.filter(*surfaceMapCloudDS);
+
+    	pcl::io::savePCDFileASCII(fileDirectory+"cornerMap.pcd", *cornerMapCloudDS);
+    	pcl::io::savePCDFileASCII(fileDirectory+"surfaceMap.pcd", *surfaceMapCloudDS);
+    	pcl::io::savePCDFileASCII(fileDirectory+"trajectory.pcd", *cloudKeyPoses3D);
+
+    	// 최종 글로벌 맵 저장
+    	pcl::io::savePCDFileASCII(fileDirectory+"finalCloud.pcd", *globalMapKeyFramesDS);
+
+    	ROS_INFO("Finished saving final map.");
+		}
+
 
     void publishGlobalMap(){
 
